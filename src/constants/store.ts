@@ -34,8 +34,8 @@ export const STORE_DATA = [
     category: 'Hipercalórico',
     items: [
       { id: 'hipercalorico-integralMedica', name: 'Hipercalórico IntegralMedica (3kg)', price: 'R$ 132,29', image: require('@/assets/images/hipercalorico-integralMedica.png') },
-      { id: 'hipercalorico-max', name: 'Hipercalórico Max (3kg)', price: 'R$ 130,99', image: require('@/assets/images/hipercalórico-max.png') },
-      { id: 'hipercalorico-growth', name: 'Hipercalórico Growth (1kg)', price: 'R$ 54,90', image: require('@/assets/images/hipercalórico-growth.png') },
+      { id: 'hipercalorico-max', name: 'Hipercalórico Max (3kg)', price: 'R$ 130,99', image: require('@/assets/images/hipercalorico-max.png') },
+      { id: 'hipercalorico-growth', name: 'Hipercalórico Growth (1kg)', price: 'R$ 54,90', image: require('@/assets/images/hipercalorico-growth.png') },
     ],
   },
 ];

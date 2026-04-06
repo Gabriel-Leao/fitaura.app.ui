@@ -1,16 +1,13 @@
 import { useUserContext } from '@/components/context/useUserContext'
 import { ROUTES } from '@/constants/routes'
-import { router, Stack } from 'expo-router'
-import { useEffect } from 'react'
+import { Redirect, Stack } from 'expo-router'
 
 export default function AuthLayout() {
   const { currentUser } = useUserContext()
 
-  useEffect(() => {
-    if (currentUser) {
-      router.push(ROUTES.HOME.ROUTE)
-    }
-  }, [currentUser])
+  if (currentUser) {
+    return <Redirect href={ROUTES.HOME.ROUTE} />
+  }
 
   return <Stack screenOptions={{ headerShown: false }} />
 }

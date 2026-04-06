@@ -1,17 +1,14 @@
 import { useUserContext } from '@/components/context/useUserContext'
 import { ROUTES } from '@/constants/routes'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
-import { router, Tabs } from 'expo-router'
-import { useEffect } from 'react'
+import { Redirect, Tabs } from 'expo-router'
 
 export default function TabsLayout() {
   const { currentUser } = useUserContext()
 
-  useEffect(() => {
-    if (!currentUser) {
-      router.push(ROUTES.SIGN_IN.ROUTE)
-    }
-  }, [currentUser])
+  if (!currentUser) {
+    return <Redirect href={ROUTES.SIGN_IN.ROUTE} />
+  }
 
   return (
     <Tabs
