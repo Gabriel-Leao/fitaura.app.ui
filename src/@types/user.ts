@@ -9,4 +9,5 @@ export type User = {
   goal?: UserGoal
   sex: UserSex
   password: string
+  avatar?: string
 }

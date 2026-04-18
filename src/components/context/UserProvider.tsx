@@ -15,6 +15,7 @@ type UserContextType = {
   login: (email: string, password: string) => Promise<User>
   logout: () => Promise<void>
   deleteUser: (id: string) => Promise<void>
+  updateAvatar: (id: string, uri: string) => Promise<void>
 }
 
 export const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -130,6 +131,15 @@ export const UserProvider = ({ children }: React.PropsWithChildren) => {
     }
   }
 
+  const updateAvatar = async (id: string, uri: string) => {
+    const updatedUsers = users.map((u) => (u.id === id ? { ...u, avatar: uri } : u))
+    setUsers(updatedUsers)
+
+    if (currentUser?.id === id) {
+      setCurrentUser((prev) => (prev ? { ...prev, avatar: uri } : prev))
+    }
+  }
+
   return (
     <UserContext.Provider
       value={{
@@ -140,6 +150,7 @@ export const UserProvider = ({ children }: React.PropsWithChildren) => {
         login,
         logout,
         deleteUser,
+        updateAvatar,
       }}>
       {children}
     </UserContext.Provider>

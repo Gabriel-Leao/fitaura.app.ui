@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { ActivityIndicator, View } from 'react-native'
+import { ActivityIndicator, Alert, View } from 'react-native'
 
 import { Link, router } from 'expo-router'
 
@@ -34,7 +34,7 @@ const SignUp = () => {
       await register(data)
       router.push(ROUTES.HOME.ROUTE)
     } catch (error: unknown) {
-      alert((error as Error).message)
+      Alert.alert('Erro', (error as Error).message)
     } finally {
       setIsSubmitting(false)
     }
