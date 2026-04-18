@@ -1,6 +1,7 @@
+import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import { STORE_DATA } from '@/constants/store'
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
 const Shop = () => {
   return (
@@ -12,28 +13,22 @@ const Shop = () => {
           <View
             key={section.category}
             className='mb-8'>
-            <Text className='text-white text-xl font-semibold mb-4'>
-              {section.category}
-            </Text>
+            <Text className='mb-4 text-xl font-semibold text-white'>{section.category}</Text>
 
             <View className='flex-row flex-wrap justify-between'>
               {section.items.map((item) => (
                 <TouchableOpacity
                   key={item.id}
-                  className='w-[30%] rounded-xl p-3 mb-4 items-center'
+                  className='mb-4 w-[30%] items-center rounded-xl p-3'
                   activeOpacity={0.7}>
                   <Image
                     source={item.image}
-                    className='w-[100px] h-[150px] mb-2 rounded-xl'
+                    className='mb-2 h-[150px] w-[100px] rounded-xl'
                   />
 
-                  <Text className='text-white text-xs text-center leading-tight'>
-                    {item.name}
-                  </Text>
+                  <Text className='text-center text-xs leading-tight text-white'>{item.name}</Text>
 
-                  <Text className='text-white text-[10px] opacity-70 mt-1'>
-                    {item.price}
-                  </Text>
+                  <Text className='mt-1 text-[10px] text-white opacity-70'>{item.price}</Text>
                 </TouchableOpacity>
               ))}
             </View>

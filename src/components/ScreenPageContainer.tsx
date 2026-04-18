@@ -1,21 +1,16 @@
-import { cn } from '@/lib/utils/cn'
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { View } from 'react-native'
+
+import { cn } from '@/lib/utils/cn'
 
 export type ScreenPageContainerProps = {
   children: ReactNode
   className?: string
 }
 
-const ScreenPageContainer = ({
-  children,
-  className,
-}: ScreenPageContainerProps) => {
+const ScreenPageContainer = ({ children, className }: ScreenPageContainerProps) => {
   return (
-    <View
-      className={cn('flex-1 bg-[#021123] py-10 px-4 min-h-screen', className)}>
-      {children}
-    </View>
+    <View className={cn('min-h-screen flex-1 bg-[#021123] px-4 py-10', className)}>{children}</View>
   )
 }
 

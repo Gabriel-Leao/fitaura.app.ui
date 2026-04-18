@@ -1,8 +1,10 @@
-import ScreenPageContainer from '@/components/ScreenPageContainer'
-import ScreenPageTitle from '@/components/ScreenPageTitle'
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 import { useState } from 'react'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
+
+import ScreenPageContainer from '@/components/ScreenPageContainer'
+import ScreenPageTitle from '@/components/ScreenPageTitle'
 
 const workouts = [
   {
@@ -42,7 +44,7 @@ const Workout = () => {
 
   const toggleSection = (index: number) => {
     setOpenSections((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
     )
   }
 
@@ -51,7 +53,7 @@ const Workout = () => {
       <ScrollView className='px-5 pb-10'>
         <ScreenPageTitle>Seus treinos</ScreenPageTitle>
 
-        <Text className='text-white text-base mt-1 mb-6 text-center'>
+        <Text className='mb-6 mt-1 text-center text-base text-white'>
           Toque em um treino para ver os exercícios.
         </Text>
 
@@ -61,13 +63,11 @@ const Workout = () => {
           return (
             <View
               key={i}
-              className='border border-gray-700 rounded-2xl p-4 mb-6'>
+              className='mb-6 rounded-2xl border border-gray-700 p-4'>
               <TouchableOpacity
-                className='flex flex-row justify-between items-center'
+                className='flex flex-row items-center justify-between'
                 onPress={() => toggleSection(i)}>
-                <Text className='text-white text-lg font-semibold'>
-                  {workout.title}
-                </Text>
+                <Text className='text-lg font-semibold text-white'>{workout.title}</Text>
 
                 <FontAwesome5
                   name={isOpen ? 'chevron-up' : 'chevron-down'}
@@ -81,10 +81,10 @@ const Workout = () => {
                   {workout.exercises.map((ex, j) => (
                     <View
                       key={j}
-                      className='py-2 border-b border-gray-800'>
-                      <Text className='text-white text-base'>{ex.name}</Text>
+                      className='border-b border-gray-800 py-2'>
+                      <Text className='text-base text-white'>{ex.name}</Text>
 
-                      <Text className='text-gray-400 text-sm mt-1'>
+                      <Text className='mt-1 text-sm text-gray-400'>
                         {ex.sets} séries — {ex.reps}
                         {ex.load ? ` • carga: ${ex.load}` : ''}
                       </Text>

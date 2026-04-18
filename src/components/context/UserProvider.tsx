@@ -1,8 +1,11 @@
-import { User } from '@/@types/user'
-import { CURRENT_USER_KEY, USERS_STORAGE_KEY } from '@/constants/usersKey'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import * as Crypto from 'expo-crypto'
 import { createContext, useCallback, useEffect, useState } from 'react'
+
+import * as Crypto from 'expo-crypto'
+
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
+import type { User } from '@/@types/user'
+import { CURRENT_USER_KEY, USERS_STORAGE_KEY } from '@/constants/usersKey'
 
 type UserContextType = {
   users: User[]
@@ -68,18 +71,23 @@ export const UserProvider = ({ children }: React.PropsWithChildren) => {
     if (!isLoading) storeCurrentUser(currentUser)
   }, [currentUser, storeCurrentUser, isLoading])
 
+  const hashPassword = async (password: string): Promise<string> => {
+    return await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password)
+  }
+
   const register = async (userData: Omit<User, 'id'>) => {
-    const alreadyExists = users.some(
-      (u) => u.email.toLowerCase() === userData.email.toLowerCase()
-    )
+    const alreadyExists = users.some((u) => u.email.toLowerCase() === userData.email.toLowerCase())
 
     if (alreadyExists) {
       throw new Error('E-mail já está em uso')
     }
 
+    const hashedPassword = await hashPassword(userData.password)
+
     const newUser: User = {
       id: String(Crypto.randomUUID()),
       ...userData,
+      password: hashedPassword,
     }
 
     setUsers((prev) => [...prev, newUser])
@@ -89,9 +97,10 @@ export const UserProvider = ({ children }: React.PropsWithChildren) => {
   }
 
   const login = async (email: string, password: string) => {
+    const hashedPassword = await hashPassword(password)
+
     const user = users.find(
-      (u) =>
-        u.email.toLowerCase() === email.toLowerCase() && u.password === password
+      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === hashedPassword,
     )
 
     if (!user) {

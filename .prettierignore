@@ -1,0 +1,9 @@
+node_modules
+dist
+.expo
+build
+android
+ios
+*.generated.ts
+expo-env.d.ts
+global.d.ts

@@ -1,7 +1,8 @@
+import { ScrollView, Text, View } from 'react-native'
+
 import { useUserContext } from '@/components/context/useUserContext'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import ScreenPageTitle from '@/components/ScreenPageTitle'
-import { ScrollView, Text, View } from 'react-native'
 
 const meals = [
   {
@@ -87,13 +88,9 @@ const Index = () => {
         <ScreenPageTitle className='text-2xl'>
           {greeting} {currentUser?.name?.split(' ')[0]}
         </ScreenPageTitle>
-        <Text className='text-white text-lg text-center font-medium'>
-          {subtitle}
-        </Text>
+        <Text className='text-center text-lg font-medium text-white'>{subtitle}</Text>
 
-        <Text className='text-white text-lg font-semibold mt-8 mb-3'>
-          Refeições de hoje
-        </Text>
+        <Text className='mb-3 mt-8 text-lg font-semibold text-white'>Refeições de hoje</Text>
 
         {meals.map((meal, index) => {
           const total = meal.foods.reduce(
@@ -103,20 +100,17 @@ const Index = () => {
               carbs: acc.carbs + f.carbs,
               fat: acc.fat + f.fat,
             }),
-            { calories: 0, protein: 0, carbs: 0, fat: 0 }
+            { calories: 0, protein: 0, carbs: 0, fat: 0 },
           )
 
           return (
             <View
               key={index}
-              className='rounded-xl border border-white/10 p-4 mb-5'>
-              <Text className='text-white font-semibold text-base'>
-                {meal.title}
-              </Text>
+              className='mb-5 rounded-xl border border-white/10 p-4'>
+              <Text className='text-base font-semibold text-white'>{meal.title}</Text>
 
-              <Text className='text-gray-400 text-sm mt-1 mb-3'>
-                {total.calories} kcal • {total.protein}P • {total.carbs}C •{' '}
-                {total.fat}G
+              <Text className='mb-3 mt-1 text-sm text-gray-400'>
+                {total.calories} kcal • {total.protein}P • {total.carbs}C • {total.fat}G
               </Text>
 
               {meal.foods.map((food, i) => (
@@ -126,8 +120,7 @@ const Index = () => {
                   <Text className='text-gray-300'>{food.name}</Text>
 
                   <Text className='text-gray-400'>
-                    {food.calories} kcal • {food.protein}P • {food.carbs}C •{' '}
-                    {food.fat}G
+                    {food.calories} kcal • {food.protein}P • {food.carbs}C • {food.fat}G
                   </Text>
                 </View>
               ))}

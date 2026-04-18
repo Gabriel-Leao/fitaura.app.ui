@@ -1,14 +1,10 @@
-import { cn } from '@/lib/utils/cn'
-import { Picker } from '@react-native-picker/picker'
 import { useState } from 'react'
-import { Control, Controller, FieldValues, Path } from 'react-hook-form'
-import {
-  Modal,
-  Platform,
-  Pressable,
-  Text,
-  View,
-} from 'react-native'
+import { type Control, Controller, type FieldValues, type Path } from 'react-hook-form'
+import { Modal, Platform, Pressable, Text, View } from 'react-native'
+
+import { Picker } from '@react-native-picker/picker'
+
+import { cn } from '@/lib/utils/cn'
 
 type Option = { label: string; value: string }
 
@@ -39,24 +35,19 @@ const CustomPicker = <T extends FieldValues>({
       name={name}
       rules={rules}
       render={({ field: { value, onChange }, fieldState: { error } }) => {
-        const selectedLabel =
-          options.find((o) => o.value === value)?.label ?? placeholder
+        const selectedLabel = options.find((o) => o.value === value)?.label ?? placeholder
 
         return (
-          <View className={cn('w-4/5 rounded-xl gap-2', viewClassname)}>
+          <View className={cn('w-4/5 gap-2 rounded-xl', viewClassname)}>
             {Platform.OS === 'ios' ? (
               <>
                 <Pressable
                   onPress={() => setIosModalVisible(true)}
                   className={cn(
-                    'bg-white rounded-xl border-2 px-4 py-4',
-                    error ? 'border-red-600' : 'border-transparent'
+                    'rounded-xl border-2 bg-white px-4 py-4',
+                    error ? 'border-red-600' : 'border-transparent',
                   )}>
-                  <Text
-                    className={cn(
-                      'text-base',
-                      value ? 'text-black' : 'text-gray-400'
-                    )}>
+                  <Text className={cn('text-base', value ? 'text-black' : 'text-gray-400')}>
                     {selectedLabel}
                   </Text>
                 </Pressable>
@@ -64,22 +55,25 @@ const CustomPicker = <T extends FieldValues>({
                 <Modal
                   visible={iosModalVisible}
                   transparent
-                  animationType="slide">
+                  animationType='slide'>
                   <Pressable
-                    className="flex-1 bg-black/40"
+                    className='flex-1 bg-black/40'
                     onPress={() => setIosModalVisible(false)}
                   />
-                  <View className="bg-white">
-                    <View className="flex-row justify-end px-4 py-2 border-b border-gray-200">
+                  <View className='bg-white'>
+                    <View className='flex-row justify-end border-b border-gray-200 px-4 py-2'>
                       <Pressable onPress={() => setIosModalVisible(false)}>
-                        <Text className="text-blue-500 text-base font-semibold">
-                          Concluído
-                        </Text>
+                        <Text className='text-base font-semibold text-blue-500'>Concluído</Text>
                       </Pressable>
                     </View>
 
-                    <Picker selectedValue={value} onValueChange={onChange}>
-                      <Picker.Item label={placeholder} value="" />
+                    <Picker
+                      selectedValue={value}
+                      onValueChange={onChange}>
+                      <Picker.Item
+                        label={placeholder}
+                        value=''
+                      />
                       {options.map((opt) => (
                         <Picker.Item
                           key={opt.value}
@@ -94,14 +88,17 @@ const CustomPicker = <T extends FieldValues>({
             ) : (
               <View
                 className={cn(
-                  'bg-white rounded-xl border-2',
-                  error ? 'border-red-600' : 'border-transparent'
+                  'rounded-xl border-2 bg-white',
+                  error ? 'border-red-600' : 'border-transparent',
                 )}>
                 <Picker
                   selectedValue={value}
                   onValueChange={onChange}
-                  className={cn('w-full h-full', pickerClassname)}>
-                  <Picker.Item label={placeholder} value="" />
+                  className={cn('h-full w-full', pickerClassname)}>
+                  <Picker.Item
+                    label={placeholder}
+                    value=''
+                  />
                   {options.map((opt) => (
                     <Picker.Item
                       key={opt.value}
@@ -114,10 +111,7 @@ const CustomPicker = <T extends FieldValues>({
             )}
 
             <Text
-              className={cn(
-                'text-red-600 self-stretch px-2 min-h-[16px]',
-                !error && 'opacity-0'
-              )}>
+              className={cn('min-h-[16px] self-stretch px-2 text-red-600', !error && 'opacity-0')}>
               {error?.message || 'Erro'}
             </Text>
           </View>

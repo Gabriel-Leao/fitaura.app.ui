@@ -1,6 +1,7 @@
+import { Redirect, Stack } from 'expo-router'
+
 import { useUserContext } from '@/components/context/useUserContext'
 import { ROUTES } from '@/constants/routes'
-import { Redirect, Stack } from 'expo-router'
 
 export default function AuthLayout() {
   const { currentUser } = useUserContext()

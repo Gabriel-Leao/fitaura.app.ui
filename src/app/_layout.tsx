@@ -1,5 +1,6 @@
-import { UserProvider } from '@/components/context/UserProvider'
 import { Slot } from 'expo-router'
+
+import { UserProvider } from '@/components/context/UserProvider'
 
 import '../../global.css'
 

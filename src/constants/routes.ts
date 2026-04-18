@@ -1,28 +1,28 @@
-import { Href } from 'expo-router'
+import type { Href } from 'expo-router'
 
 export const ROUTES = {
   HOME: {
     ROUTE: '/' as Href,
     LABEL: 'Home',
     NAME: 'index',
-    ICON: 'home'
+    ICON: 'home',
   },
   PROFILE: {
     ROUTE: '/profile' as Href,
     LABEL: 'Perfil',
     NAME: 'profile',
-    ICON: 'user-alt'
+    ICON: 'user-alt',
   },
   SHOP: {
     ROUTE: '/shop' as Href,
     LABEL: 'Loja',
     NAME: 'shop',
-    ICON: 'shopping-cart'
+    ICON: 'shopping-cart',
   },
   SIGN_IN: {
     ROUTE: '/sign-in' as Href,
     LABEL: 'Login',
-    NAME: 'sign-in'
+    NAME: 'sign-in',
   },
   SIGN_UP: {
     ROUTE: '/sign-up' as Href,
@@ -33,6 +33,6 @@ export const ROUTES = {
     ROUTE: '/workout' as Href,
     LABEL: 'Treino',
     NAME: 'workout',
-    ICON: 'dumbbell'
+    ICON: 'dumbbell',
   },
 } as const

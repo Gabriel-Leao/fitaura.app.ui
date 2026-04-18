@@ -1,6 +1,7 @@
+import { type Control, Controller, type FieldValues, type Path } from 'react-hook-form'
+import { type KeyboardTypeOptions, Text, TextInput, View } from 'react-native'
+
 import { cn } from '@/lib/utils/cn'
-import { Control, Controller, FieldValues, Path } from 'react-hook-form'
-import { KeyboardTypeOptions, Text, TextInput, View } from 'react-native'
 
 type CustomInputProps<T extends FieldValues> = {
   placeholder: string
@@ -28,11 +29,8 @@ const CustomInput = <T extends FieldValues>({
       control={control}
       name={name}
       rules={rules}
-      render={({
-        field: { value, onChange, onBlur },
-        fieldState: { error },
-      }) => (
-        <View className={cn('w-4/5 rounded-xl gap-2', viewClassname)}>
+      render={({ field: { value, onChange, onBlur }, fieldState: { error } }) => (
+        <View className={cn('w-4/5 gap-2 rounded-xl', viewClassname)}>
           <TextInput
             placeholder={placeholder}
             autoComplete='off'
@@ -42,16 +40,13 @@ const CustomInput = <T extends FieldValues>({
             onBlur={onBlur}
             secureTextEntry={secureTextEntry ?? false}
             className={cn(
-              'bg-[#fff] rounded-xl border-2 text-[#144480] px-6 py-3',
+              'rounded-xl border-2 bg-[#fff] px-6 py-3 text-[#144480]',
               error ? 'border-red-600' : 'border-transparent',
-              inputClassname
+              inputClassname,
             )}
           />
           <Text
-            className={cn(
-              'text-red-600 self-stretch px-2 min-h-[16px]',
-              !error && 'opacity-0'
-            )}>
+            className={cn('min-h-[16px] self-stretch px-2 text-red-600', !error && 'opacity-0')}>
             {error?.message || 'Erro'}
           </Text>
         </View>

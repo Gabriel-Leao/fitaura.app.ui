@@ -1,7 +1,8 @@
+import { Redirect, Tabs } from 'expo-router'
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
+
 import { useUserContext } from '@/components/context/useUserContext'
 import { ROUTES } from '@/constants/routes'
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
-import { Redirect, Tabs } from 'expo-router'
 
 export default function TabsLayout() {
   const { currentUser } = useUserContext()

@@ -1,3 +1,11 @@
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { ActivityIndicator, View } from 'react-native'
+
+import { Link, router } from 'expo-router'
+
+import { UserGoal, UserSex } from '@/@types/enums'
+import type { SignUpFormData } from '@/@types/forms'
 import { useUserContext } from '@/components/context/useUserContext'
 import CustomButton from '@/components/CustomButton'
 import CustomInput from '@/components/CustomInput'
@@ -6,19 +14,6 @@ import FormWrapper from '@/components/FormWrapper'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import ScreenPageTitle from '@/components/ScreenPageTitle'
 import { ROUTES } from '@/constants/routes'
-import { Link, router } from 'expo-router'
-import { useForm } from 'react-hook-form'
-import { View } from 'react-native'
-
-type SignUpFormData = {
-  name: string
-  email: string
-  age: number
-  height: string
-  goal: 'Perder peso' | 'Ganhar peso' | 'Manter peso'
-  sex: 'Masculino' | 'Feminino'
-  password: string
-}
 
 const SignUp = () => {
   const {
@@ -31,13 +26,17 @@ const SignUp = () => {
   })
 
   const { register } = useUserContext()
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   const onCreatePressed = async (data: SignUpFormData) => {
+    setIsSubmitting(true)
     try {
       await register(data)
       router.push(ROUTES.HOME.ROUTE)
-    } catch (error: any) {
-      alert(error.message)
+    } catch (error: unknown) {
+      alert((error as Error).message)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -45,7 +44,7 @@ const SignUp = () => {
     <ScreenPageContainer className='gap-8 pt-24'>
       <ScreenPageTitle>Criar conta</ScreenPageTitle>
       <FormWrapper>
-        <View className='gap-3 items-center'>
+        <View className='items-center gap-3'>
           <CustomInput
             name='name'
             placeholder='Nome completo'
@@ -87,7 +86,7 @@ const SignUp = () => {
             }}
           />
 
-          <View className='flex flex-row gap-8 justify-center'>
+          <View className='flex flex-row justify-center gap-8'>
             <CustomInput
               name='age'
               placeholder='Idade'
@@ -100,10 +99,7 @@ const SignUp = () => {
                   value: 18,
                   message: 'É necessário ter no mínimo 18 anos',
                 },
-                max: {
-                  value: 120,
-                  message: 'Idade muito alta, verifique',
-                },
+                max: { value: 120, message: 'Idade muito alta, verifique' },
                 pattern: {
                   value: /^[0-9]+$/,
                   message: 'A idade deve conter apenas números inteiros',
@@ -141,8 +137,8 @@ const SignUp = () => {
             placeholder='Sexo'
             rules={{ required: 'Selecione seu sexo' }}
             options={[
-              { label: 'Masculino', value: 'Masculino' },
-              { label: 'Feminino', value: 'Feminino' },
+              { label: 'Masculino', value: UserSex.Male },
+              { label: 'Feminino', value: UserSex.Female },
             ]}
           />
 
@@ -152,22 +148,29 @@ const SignUp = () => {
             placeholder='Objetivo'
             rules={{ required: 'Selecione seu objetivo' }}
             options={[
-              { label: 'Perder peso', value: 'Perder peso' },
-              { label: 'Ganhar peso', value: 'Ganhar peso' },
-              { label: 'Manter peso', value: 'Manter peso' },
+              { label: 'Perder peso', value: UserGoal.LoseWeight },
+              { label: 'Ganhar peso', value: UserGoal.GainWeight },
+              { label: 'Manter peso', value: UserGoal.MaintainWeight },
             ]}
           />
 
-          <CustomButton
-            onPress={handleSubmit(onCreatePressed)}
-            disabled={!isValid}
-            label='Criar conta'
-          />
+          {isSubmitting ? (
+            <ActivityIndicator
+              size='large'
+              color='#B872FF'
+            />
+          ) : (
+            <CustomButton
+              onPress={handleSubmit(onCreatePressed)}
+              disabled={!isValid}
+              label='Criar conta'
+            />
+          )}
         </View>
       </FormWrapper>
       <Link
         href={ROUTES.SIGN_IN.ROUTE}
-        className='text-[#fff] text-center pt-12'>
+        className='pt-12 text-center text-[#fff]'>
         Já tem conta? Faça login
       </Link>
     </ScreenPageContainer>
