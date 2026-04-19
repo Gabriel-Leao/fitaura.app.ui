@@ -16,6 +16,7 @@ type UserContextType = {
   logout: () => Promise<void>
   deleteUser: (id: string) => Promise<void>
   updateAvatar: (id: string, uri: string) => Promise<void>
+  updateUser: (id: string, data: Partial<Omit<User, 'id' | 'password'>>) => Promise<void>
 }
 
 export const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -116,6 +117,15 @@ export const UserProvider = ({ children }: React.PropsWithChildren) => {
     setCurrentUser(null)
   }
 
+  const updateUser = async (id: string, data: Partial<Omit<User, 'id' | 'password'>>) => {
+    const updatedUsers = users.map((u) => (u.id === id ? { ...u, ...data } : u))
+    setUsers(updatedUsers)
+
+    if (currentUser?.id === id) {
+      setCurrentUser((prev) => (prev ? { ...prev, ...data } : prev))
+    }
+  }
+
   const deleteUser = async (id: string) => {
     const userExists = users.some((u) => u.id === id)
 
@@ -151,6 +161,7 @@ export const UserProvider = ({ children }: React.PropsWithChildren) => {
         logout,
         deleteUser,
         updateAvatar,
+        updateUser,
       }}>
       {children}
     </UserContext.Provider>
