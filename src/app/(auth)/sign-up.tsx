@@ -6,7 +6,7 @@ import { Link, router } from 'expo-router'
 
 import { UserGoal, UserSex } from '@/@types/enums'
 import type { SignUpFormData } from '@/@types/forms'
-import { useUserContext } from '@/components/context/useUserContext'
+import { useUserContext } from '@/components/context/user/useUserContext'
 import CustomButton from '@/components/CustomButton'
 import CustomInput from '@/components/CustomInput'
 import CustomPicker from '@/components/CustomPicker'
