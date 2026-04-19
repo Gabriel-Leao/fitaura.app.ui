@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker'
 import { router } from 'expo-router'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
-import { useUserContext } from '@/components/context/useUserContext'
+import { useUserContext } from '@/components/context/user/useUserContext'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import { ROUTES } from '@/constants/routes'
 
