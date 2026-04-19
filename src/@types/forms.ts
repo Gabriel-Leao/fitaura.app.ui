@@ -1,4 +1,4 @@
-import type { UserGoal, UserSex } from './enums'
+import type { ActivityLevel, UserGoal, UserSex } from './enums'
 
 export type SignInFormData = {
   email: string
@@ -10,7 +10,9 @@ export type SignUpFormData = {
   email: string
   age: number
   height: string
+  weight: number
   goal: UserGoal
   sex: UserSex
+  activityLevel: ActivityLevel
   password: string
 }

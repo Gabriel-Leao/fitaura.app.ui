@@ -9,6 +9,7 @@ import { useDietContext } from '@/components/context/diet/useDietContext'
 import { useUserContext } from '@/components/context/user/useUserContext'
 import { AddEntryModal } from '@/components/diet/AddEntryModal'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
+import { calculateNutritionGoal, getCalorieStatus } from '@/lib/utils/nutrition'
 
 const toDateString = (date: Date): string => date.toISOString().split('T')[0]
 
@@ -27,7 +28,7 @@ const getGreeting = () => {
   return { greeting: 'Boa noite', subtitle: 'Feche o dia com leveza e equilíbrio.' }
 }
 
-export default function Index() {
+const Index = () => {
   const { currentUser } = useUserContext()
   const { getDayDiet, removeEntry, getDayTotalCalories, getDayTotalMacros } = useDietContext()
   const { greeting, subtitle } = getGreeting()
@@ -46,6 +47,27 @@ export default function Index() {
   const dayDiet = getDayDiet(currentDate)
   const totalCalories = getDayTotalCalories(currentDate)
   const totalMacros = getDayTotalMacros(currentDate)
+  const nutritionGoal = currentUser ? calculateNutritionGoal(currentUser) : null
+
+  const status = nutritionGoal ? getCalorieStatus(totalCalories, nutritionGoal.calories) : null
+
+  const statusConfig = {
+    on_track: {
+      icon: 'check-circle' as const,
+      color: '#22c55e',
+      message: 'No caminho certo',
+    },
+    below: {
+      icon: 'arrow-circle-down' as const,
+      color: '#facc15',
+      message: 'Você ainda pode comer mais',
+    },
+    above: {
+      icon: 'exclamation-circle' as const,
+      color: '#ef4444',
+      message: 'Meta ultrapassada',
+    },
+  }
 
   const goBack = () => {
     const [y, m, d] = currentDate.split('-').map(Number)
@@ -102,18 +124,49 @@ export default function Index() {
         <View className='mb-6 rounded-2xl border border-[#B872FF]/40 bg-[#B872FF]/20 p-4'>
           <Text className='mb-1 text-center text-sm text-gray-400'>Total consumido</Text>
           <Text className='text-center text-3xl font-bold text-white'>{totalCalories} kcal</Text>
+
+          {nutritionGoal && (
+            <Text className='mt-1 text-center text-sm text-gray-400'>
+              Meta: {nutritionGoal.calories} kcal
+            </Text>
+          )}
+
+          {status && (
+            <View className='mt-3 flex-row items-center justify-center gap-2'>
+              <FontAwesome5
+                name={statusConfig[status].icon}
+                size={16}
+                color={statusConfig[status].color}
+              />
+              <Text
+                style={{ color: statusConfig[status].color }}
+                className='text-sm font-semibold'>
+                {statusConfig[status].message}
+              </Text>
+            </View>
+          )}
+
           <View className='mt-3 flex-row justify-around border-t border-white/10 pt-3'>
             <View className='items-center'>
               <Text className='text-xs text-gray-400'>Proteína</Text>
               <Text className='font-semibold text-white'>{totalMacros.protein}g</Text>
+              {nutritionGoal && (
+                <Text className='text-xs text-gray-500'>/ {nutritionGoal.protein}g</Text>
+              )}
             </View>
             <View className='items-center'>
               <Text className='text-xs text-gray-400'>Carboidrato</Text>
               <Text className='font-semibold text-white'>{totalMacros.carbs}g</Text>
+              {nutritionGoal && (
+                <Text className='text-xs text-gray-500'>/ {nutritionGoal.carbs}g</Text>
+              )}
             </View>
             <View className='items-center'>
               <Text className='text-xs text-gray-400'>Gordura</Text>
               <Text className='font-semibold text-white'>{totalMacros.fat}g</Text>
+              {nutritionGoal && (
+                <Text className='text-xs text-gray-500'>/ {nutritionGoal.fat}g</Text>
+              )}
             </View>
           </View>
         </View>
@@ -204,3 +257,5 @@ export default function Index() {
     </ScreenPageContainer>
   )
 }
+
+export default Index
