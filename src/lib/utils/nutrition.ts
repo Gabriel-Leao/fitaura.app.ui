@@ -23,7 +23,6 @@ export const calculateNutritionGoal = (user: NutritionInput): NutritionGoal | nu
   const height = parseFloat(user.height)
   const age = user.age
 
-  // Mifflin-St Jeor
   const bmr =
     user.sex === UserSex.Male
       ? 10 * weight + 6.25 * height - 5 * age + 5
@@ -39,7 +38,6 @@ export const calculateNutritionGoal = (user: NutritionInput): NutritionGoal | nu
         ? tdee + 300
         : tdee
 
-  // Distribuição de macros por objetivo
   const macroRatios: Record<UserGoal, { protein: number; carbs: number; fat: number }> = {
     [UserGoal.LoseWeight]: { protein: 0.35, carbs: 0.4, fat: 0.25 },
     [UserGoal.MaintainWeight]: { protein: 0.25, carbs: 0.5, fat: 0.25 },
