@@ -61,9 +61,21 @@ type ExerciseEntryItemProps = {
   entry: ExerciseEntryInput
   onChange: (updated: ExerciseEntryInput) => void
   onRemove: () => void
+  onMoveUp?: () => void
+  onMoveDown?: () => void
+  isFirst?: boolean
+  isLast?: boolean
 }
 
-export const ExerciseEntryItem = ({ entry, onChange, onRemove }: ExerciseEntryItemProps) => {
+export const ExerciseEntryItem = ({
+  entry,
+  onChange,
+  onRemove,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
+}: ExerciseEntryItemProps) => {
   const u = (field: Partial<ExerciseEntryInput>) => onChange({ ...entry, ...field })
   const color = EXERCISE_TYPE_COLORS[entry.type]
 
@@ -82,15 +94,39 @@ export const ExerciseEntryItem = ({ entry, onChange, onRemove }: ExerciseEntryIt
           </View>
           <Text className='flex-1 text-sm font-semibold text-white'>{entry.exerciseName}</Text>
         </View>
-        <TouchableOpacity
-          onPress={onRemove}
-          className='p-1'>
-          <FontAwesome5
-            name='trash-alt'
-            size={12}
-            color='#ef4444'
-          />
-        </TouchableOpacity>
+        <View className='flex-row items-center gap-2'>
+          <View className='flex-col gap-0.5'>
+            <TouchableOpacity
+              onPress={onMoveUp}
+              disabled={isFirst}
+              className='h-6 w-6 items-center justify-center rounded-md bg-white/10 disabled:opacity-30'>
+              <FontAwesome5
+                name='chevron-up'
+                size={9}
+                color='white'
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={onMoveDown}
+              disabled={isLast}
+              className='h-6 w-6 items-center justify-center rounded-md bg-white/10 disabled:opacity-30'>
+              <FontAwesome5
+                name='chevron-down'
+                size={9}
+                color='white'
+              />
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            onPress={onRemove}
+            className='p-1'>
+            <FontAwesome5
+              name='trash-alt'
+              size={12}
+              color='#ef4444'
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {entry.type === ExerciseType.Strength ? (

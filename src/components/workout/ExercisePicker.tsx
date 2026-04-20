@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
@@ -72,7 +72,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
   const muscleOptions = Object.values(MuscleGroup)
 
   return (
-    <View className='flex-1'>
+    <View>
       {showNew ? (
         <View className='gap-3'>
           <Text className='mb-1 text-sm text-gray-400'>Nome do exercício</Text>
@@ -135,14 +135,15 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
               </TouchableOpacity>
             ))}
           </View>
-          <FlatList
-            data={filtered}
-            keyExtractor={(item) => item.id}
-            style={{ maxHeight: 200 }}
-            renderItem={({ item }) => {
+
+          {filtered.length === 0 ? (
+            <Text className='py-4 text-center text-gray-500'>Nenhum exercício encontrado</Text>
+          ) : (
+            filtered.map((item) => {
               const color = EXERCISE_TYPE_COLORS[item.type]
               return (
                 <TouchableOpacity
+                  key={item.id}
                   onPress={() => handleSelect(item)}
                   className='mb-1 flex-row items-center justify-between rounded-xl bg-white/10 px-4 py-3'>
                   <Text className='flex-1 text-white'>{item.name}</Text>
@@ -158,11 +159,9 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
                   </View>
                 </TouchableOpacity>
               )
-            }}
-            ListEmptyComponent={
-              <Text className='py-4 text-center text-gray-500'>Nenhum exercício encontrado</Text>
-            }
-          />
+            })
+          )}
+
           <TouchableOpacity
             onPress={() => setShowNew(true)}
             className='mt-3 flex-row items-center gap-2 py-2'>

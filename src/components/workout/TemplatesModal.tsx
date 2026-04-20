@@ -14,13 +14,18 @@ type TemplatesModalProps = {
   onClose: () => void
 }
 
-type TemplateView = 'list' | 'editing'
+type ViewMode = 'list' | 'editing'
 
 export const TemplatesModal = ({ visible, onClose }: TemplatesModalProps) => {
-  const { customTemplates, addCustomTemplate, updateCustomTemplate, deleteCustomTemplate } =
-    useWorkoutContext()
+  const {
+    customTemplates,
+    addCustomTemplate,
+    updateCustomTemplate,
+    deleteCustomTemplate,
+    removeLogsByTemplateName,
+  } = useWorkoutContext()
 
-  const [view, setView] = useState<TemplateView>('list')
+  const [view, setView] = useState<ViewMode>('list')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [templateName, setTemplateName] = useState<string>('')
   const [entries, setEntries] = useState<ExerciseEntryInput[]>([])
@@ -40,10 +45,22 @@ export const TemplatesModal = ({ visible, onClose }: TemplatesModalProps) => {
     setView('editing')
   }
 
-  const handleDelete = (id: string) => {
-    Alert.alert('Excluir template', 'Tem certeza?', [
+  const handleDelete = (template: WorkoutTemplate) => {
+    Alert.alert('Excluir template', `Deseja excluir "${template.name}"?`, [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Excluir', style: 'destructive', onPress: () => deleteCustomTemplate(id) },
+      {
+        text: 'Excluir e remover treinos',
+        style: 'destructive',
+        onPress: async () => {
+          await removeLogsByTemplateName(template.name)
+          await deleteCustomTemplate(template.id)
+        },
+      },
+      {
+        text: 'Só o template',
+        style: 'destructive',
+        onPress: () => deleteCustomTemplate(template.id),
+      },
     ])
   }
 
@@ -52,12 +69,29 @@ export const TemplatesModal = ({ visible, onClose }: TemplatesModalProps) => {
       Alert.alert('Erro', 'Informe o nome do template.')
       return
     }
+    const nameExists = customTemplates.some(
+      (t) => t.name.toLowerCase() === templateName.trim().toLowerCase() && t.id !== editingId,
+    )
+    if (nameExists) {
+      Alert.alert('Nome em uso', 'Já existe um template com esse nome. Escolha outro.')
+      return
+    }
     if (editingId) {
-      await updateCustomTemplate(editingId, { name: templateName, exercises: entries })
+      await updateCustomTemplate(editingId, { name: templateName.trim(), exercises: entries })
     } else {
-      await addCustomTemplate({ name: templateName, exercises: entries })
+      await addCustomTemplate({ name: templateName.trim(), exercises: entries })
     }
     setView('list')
+  }
+
+  const moveEntry = (index: number, direction: 'up' | 'down') => {
+    setEntries((prev) => {
+      const next = [...prev]
+      const target = direction === 'up' ? index - 1 : index + 1
+      if (target < 0 || target >= next.length) return prev
+      ;[next[index], next[target]] = [next[target], next[index]]
+      return next
+    })
   }
 
   const resetAndClose = () => {
@@ -129,7 +163,7 @@ export const TemplatesModal = ({ visible, onClose }: TemplatesModalProps) => {
                           color='#B872FF'
                         />
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleDelete(t.id)}>
+                      <TouchableOpacity onPress={() => handleDelete(t)}>
                         <FontAwesome5
                           name='trash-alt'
                           size={14}
@@ -162,7 +196,10 @@ export const TemplatesModal = ({ visible, onClose }: TemplatesModalProps) => {
 
               {showPicker ? (
                 <ExercisePicker
-                  onSelect={(entry) => setEntries((prev) => [...prev, entry])}
+                  onSelect={(entry) => {
+                    setEntries((prev) => [...prev, entry])
+                    setShowPicker(false)
+                  }}
                   onClose={() => setShowPicker(false)}
                 />
               ) : (
@@ -175,6 +212,10 @@ export const TemplatesModal = ({ visible, onClose }: TemplatesModalProps) => {
                         setEntries((prev) => prev.map((e, idx) => (idx === i ? updated : e)))
                       }
                       onRemove={() => setEntries((prev) => prev.filter((_, idx) => idx !== i))}
+                      onMoveUp={() => moveEntry(i, 'up')}
+                      onMoveDown={() => moveEntry(i, 'down')}
+                      isFirst={i === 0}
+                      isLast={i === entries.length - 1}
                     />
                   ))}
                   <TouchableOpacity

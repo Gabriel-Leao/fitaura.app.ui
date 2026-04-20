@@ -19,21 +19,28 @@ import {
   DEFAULT_EXERCISES,
   WORKOUT_LOGS_KEY,
 } from '@/constants/workout'
-import { calculateExerciseCalories, getWeekStart } from '@/lib/utils/workout'
+import { calculateExerciseCalories, getWeekRange } from '@/lib/utils/workout'
 
 type WorkoutContextType = {
   customTemplates: WorkoutTemplate[]
   customExercises: Exercise[]
   allExercises: Exercise[]
   getDayLogs: (date: string) => WorkoutLog[]
-  getWeeklyStats: () => WeeklyStats
+  getWeeklyStats: (date: string) => WeeklyStats
   logWorkout: (
     date: string,
     name: string,
     entries: ExerciseEntryInput[],
     userWeightKg: number,
   ) => Promise<void>
+  updateLog: (id: string, entries: ExerciseEntryInput[], userWeightKg: number) => Promise<void>
+  updateAllLogsByTemplateName: (
+    templateName: string,
+    entries: ExerciseEntryInput[],
+    userWeightKg: number,
+  ) => Promise<void>
   removeLog: (id: string) => Promise<void>
+  removeLogsByTemplateName: (templateName: string) => Promise<void>
   addCustomTemplate: (template: Omit<WorkoutTemplate, 'id' | 'isCustom'>) => Promise<void>
   updateCustomTemplate: (id: string, data: Partial<WorkoutTemplate>) => Promise<void>
   deleteCustomTemplate: (id: string) => Promise<void>
@@ -41,6 +48,28 @@ type WorkoutContextType = {
 }
 
 export const WorkoutContext = createContext<WorkoutContextType | undefined>(undefined)
+
+const buildExerciseEntries = (entries: ExerciseEntryInput[], weight: number): ExerciseEntry[] =>
+  entries.map((entry) => ({
+    ...entry,
+    id: String(Crypto.randomUUID()),
+    caloriesBurned: calculateExerciseCalories(entry, weight),
+  }))
+
+const buildLogStats = (exercises: ExerciseEntry[]) => ({
+  totalCalories: exercises.reduce((s, e) => s + e.caloriesBurned, 0),
+  totalWeightLifted: exercises.reduce(
+    (s, e) => s + (e.type === ExerciseType.Strength ? e.sets * e.reps * e.weightKg : 0),
+    0,
+  ),
+  totalDistanceKm: exercises.reduce((s, e) => s + e.distanceKm, 0),
+  totalDurationMinutes: exercises.reduce((s, e) => {
+    if (e.type === ExerciseType.Strength) {
+      return s + Math.ceil((e.sets * e.reps * 3 + e.sets * 60) / 60)
+    }
+    return s + e.durationMinutes
+  }, 0),
+})
 
 export const WorkoutProvider = ({ children }: React.PropsWithChildren) => {
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([])
@@ -87,53 +116,71 @@ export const WorkoutProvider = ({ children }: React.PropsWithChildren) => {
     [workoutLogs],
   )
 
-  const getWeeklyStats = useCallback((): WeeklyStats => {
-    const weekStart = getWeekStart()
-    const logs = workoutLogs.filter((l) => l.date >= weekStart)
-    return {
-      totalCalories: logs.reduce((s, l) => s + l.totalCalories, 0),
-      totalWeightLifted: logs.reduce((s, l) => s + l.totalWeightLifted, 0),
-      totalDistanceKm: Math.round(logs.reduce((s, l) => s + l.totalDistanceKm, 0) * 10) / 10,
-      totalDurationMinutes: logs.reduce((s, l) => s + l.totalDurationMinutes, 0),
-      totalWorkouts: logs.length,
-    }
-  }, [workoutLogs])
+  const getWeeklyStats = useCallback(
+    (date: string): WeeklyStats => {
+      const { start, end } = getWeekRange(date)
+      const logs = workoutLogs.filter((l) => l.date >= start && l.date <= end)
+      return {
+        totalCalories: logs.reduce((s, l) => s + l.totalCalories, 0),
+        totalWeightLifted: logs.reduce((s, l) => s + l.totalWeightLifted, 0),
+        totalDistanceKm: Math.round(logs.reduce((s, l) => s + l.totalDistanceKm, 0) * 10) / 10,
+        totalDurationMinutes: logs.reduce((s, l) => s + l.totalDurationMinutes, 0),
+        totalWorkouts: logs.length,
+      }
+    },
+    [workoutLogs],
+  )
 
   const logWorkout = useCallback(
     async (date: string, name: string, entries: ExerciseEntryInput[], userWeightKg: number) => {
       const weight = userWeightKg || 70
-      const exercises: ExerciseEntry[] = entries.map((entry) => ({
-        ...entry,
-        id: String(Crypto.randomUUID()),
-        caloriesBurned: calculateExerciseCalories(entry, weight),
-      }))
-
+      const exercises = buildExerciseEntries(entries, weight)
       const log: WorkoutLog = {
         id: String(Crypto.randomUUID()),
         date,
         templateName: name,
         exercises,
-        totalCalories: exercises.reduce((s, e) => s + e.caloriesBurned, 0),
-        totalWeightLifted: exercises.reduce(
-          (s, e) => s + (e.type === ExerciseType.Strength ? e.sets * e.reps * e.weightKg : 0),
-          0,
-        ),
-        totalDistanceKm: exercises.reduce((s, e) => s + e.distanceKm, 0),
-        totalDurationMinutes: exercises.reduce((s, e) => {
-          if (e.type === ExerciseType.Strength) {
-            return s + Math.ceil((e.sets * e.reps * 3 + e.sets * 60) / 60)
-          }
-          return s + e.durationMinutes
-        }, 0),
+        ...buildLogStats(exercises),
       }
-
       setWorkoutLogs((prev) => [...prev, log])
+    },
+    [],
+  )
+
+  const updateLog = useCallback(
+    async (id: string, entries: ExerciseEntryInput[], userWeightKg: number) => {
+      const weight = userWeightKg || 70
+      setWorkoutLogs((prev) =>
+        prev.map((log) => {
+          if (log.id !== id) return log
+          const exercises = buildExerciseEntries(entries, weight)
+          return { ...log, exercises, ...buildLogStats(exercises) }
+        }),
+      )
+    },
+    [],
+  )
+
+  const updateAllLogsByTemplateName = useCallback(
+    async (templateName: string, entries: ExerciseEntryInput[], userWeightKg: number) => {
+      const weight = userWeightKg || 70
+      setWorkoutLogs((prev) =>
+        prev.map((log) => {
+          if (log.templateName !== templateName) return log
+          const exercises = buildExerciseEntries(entries, weight)
+          return { ...log, exercises, ...buildLogStats(exercises) }
+        }),
+      )
     },
     [],
   )
 
   const removeLog = useCallback(async (id: string) => {
     setWorkoutLogs((prev) => prev.filter((l) => l.id !== id))
+  }, [])
+
+  const removeLogsByTemplateName = useCallback(async (templateName: string) => {
+    setWorkoutLogs((prev) => prev.filter((l) => l.templateName !== templateName))
   }, [])
 
   const addCustomTemplate = useCallback(
@@ -172,7 +219,10 @@ export const WorkoutProvider = ({ children }: React.PropsWithChildren) => {
         getDayLogs,
         getWeeklyStats,
         logWorkout,
+        updateLog,
+        updateAllLogsByTemplateName,
         removeLog,
+        removeLogsByTemplateName,
         addCustomTemplate,
         updateCustomTemplate,
         deleteCustomTemplate,

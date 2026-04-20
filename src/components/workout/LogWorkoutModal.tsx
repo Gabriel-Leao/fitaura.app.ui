@@ -3,7 +3,7 @@ import { Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } fro
 
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
-import { type ExerciseEntryInput, type WorkoutTemplate } from '@/@types/workout'
+import { type ExerciseEntryInput, type WorkoutLog, type WorkoutTemplate } from '@/@types/workout'
 import { useUserContext } from '@/components/context/user/useUserContext'
 import { useWorkoutContext } from '@/components/context/workout/useWorkoutContext'
 import { SUGGESTED_TEMPLATES } from '@/constants/workout'
@@ -15,17 +15,32 @@ type LogWorkoutModalProps = {
   visible: boolean
   date: string
   onClose: () => void
+  editLog?: WorkoutLog
 }
 
 type Step = 'select' | 'review'
 
-export const LogWorkoutModal = ({ visible, date, onClose }: LogWorkoutModalProps) => {
+export const LogWorkoutModal = ({ visible, date, onClose, editLog }: LogWorkoutModalProps) => {
   const { currentUser } = useUserContext()
-  const { customTemplates, logWorkout, addCustomTemplate } = useWorkoutContext()
+  const { customTemplates, logWorkout, addCustomTemplate, updateLog, updateAllLogsByTemplateName } =
+    useWorkoutContext()
 
-  const [step, setStep] = useState<Step>('select')
-  const [workoutName, setWorkoutName] = useState<string>('')
-  const [entries, setEntries] = useState<ExerciseEntryInput[]>([])
+  const isEditMode = !!editLog
+
+  const [step, setStep] = useState<Step>(isEditMode ? 'review' : 'select')
+  const [workoutName, setWorkoutName] = useState<string>(editLog?.templateName ?? '')
+  const [entries, setEntries] = useState<ExerciseEntryInput[]>(
+    editLog?.exercises.map((e) => ({
+      exerciseId: e.exerciseId,
+      exerciseName: e.exerciseName,
+      type: e.type,
+      sets: e.sets,
+      reps: e.reps,
+      weightKg: e.weightKg,
+      durationMinutes: e.durationMinutes,
+      distanceKm: e.distanceKm,
+    })) ?? [],
+  )
   const [showPicker, setShowPicker] = useState<boolean>(false)
   const [saveAsTemplate, setSaveAsTemplate] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<'suggested' | 'custom'>('suggested')
@@ -33,6 +48,14 @@ export const LogWorkoutModal = ({ visible, date, onClose }: LogWorkoutModalProps
   const suggestedForUser = SUGGESTED_TEMPLATES.filter(
     (t) => !currentUser?.goal || t.goalTag === currentUser.goal,
   )
+
+  const resolveTemplateName = (name: string): string => {
+    const allNames = customTemplates.map((t) => t.name)
+    if (!allNames.includes(name)) return name
+    let counter = 2
+    while (allNames.includes(`${name} (${counter})`)) counter++
+    return `${name} (${counter})`
+  }
 
   const handleSelectTemplate = (template: WorkoutTemplate) => {
     setWorkoutName(template.name)
@@ -51,20 +74,53 @@ export const LogWorkoutModal = ({ visible, date, onClose }: LogWorkoutModalProps
       Alert.alert('Erro', 'Adicione pelo menos um exercício.')
       return
     }
+
+    if (isEditMode) {
+      Alert.alert(
+        'Aplicar mudanças',
+        `Deseja aplicar as mudanças a todos os registros de "${editLog.templateName}"?`,
+        [
+          {
+            text: 'Só este',
+            onPress: async () => {
+              await updateLog(editLog.id, entries, currentUser?.weight ?? 70)
+              resetAndClose()
+            },
+          },
+          {
+            text: 'Todos',
+            onPress: async () => {
+              await updateAllLogsByTemplateName(
+                editLog.templateName,
+                entries,
+                currentUser?.weight ?? 70,
+              )
+              resetAndClose()
+            },
+          },
+          { text: 'Cancelar', style: 'cancel' },
+        ],
+      )
+      return
+    }
+
     if (saveAsTemplate) {
-      await addCustomTemplate({ name: workoutName, exercises: entries })
+      const resolvedName = resolveTemplateName(workoutName)
+      await addCustomTemplate({ name: resolvedName, exercises: entries })
     }
     await logWorkout(date, workoutName, entries, currentUser?.weight ?? 70)
     resetAndClose()
   }
 
   const resetAndClose = () => {
-    setStep('select')
-    setWorkoutName('')
-    setEntries([])
+    if (!isEditMode) {
+      setStep('select')
+      setWorkoutName('')
+      setEntries([])
+      setSaveAsTemplate(false)
+      setActiveTab('suggested')
+    }
     setShowPicker(false)
-    setSaveAsTemplate(false)
-    setActiveTab('suggested')
     onClose()
   }
 
@@ -74,6 +130,16 @@ export const LogWorkoutModal = ({ visible, date, onClose }: LogWorkoutModalProps
 
   const removeEntry = (index: number) => {
     setEntries((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const moveEntry = (index: number, direction: 'up' | 'down') => {
+    setEntries((prev) => {
+      const next = [...prev]
+      const target = direction === 'up' ? index - 1 : index + 1
+      if (target < 0 || target >= next.length) return prev
+      ;[next[index], next[target]] = [next[target], next[index]]
+      return next
+    })
   }
 
   const TemplateCard = ({ template }: { template: WorkoutTemplate }) => (
@@ -94,7 +160,7 @@ export const LogWorkoutModal = ({ visible, date, onClose }: LogWorkoutModalProps
         <View className='max-h-[92%] rounded-t-3xl bg-[#021123] p-6'>
           <View className='mb-4 flex-row items-center justify-between'>
             <View className='flex-row items-center gap-3'>
-              {step === 'review' && (
+              {step === 'review' && !isEditMode && (
                 <TouchableOpacity onPress={() => setStep('select')}>
                   <FontAwesome5
                     name='arrow-left'
@@ -104,7 +170,11 @@ export const LogWorkoutModal = ({ visible, date, onClose }: LogWorkoutModalProps
                 </TouchableOpacity>
               )}
               <Text className='text-lg font-bold text-white'>
-                {step === 'select' ? 'Registrar treino' : 'Revisar treino'}
+                {isEditMode
+                  ? 'Editar treino'
+                  : step === 'select'
+                    ? 'Registrar treino'
+                    : 'Revisar treino'}
               </Text>
             </View>
             <TouchableOpacity onPress={resetAndClose}>
@@ -179,7 +249,10 @@ export const LogWorkoutModal = ({ visible, date, onClose }: LogWorkoutModalProps
 
               {showPicker ? (
                 <ExercisePicker
-                  onSelect={(entry) => setEntries((prev) => [...prev, entry])}
+                  onSelect={(entry) => {
+                    setEntries((prev) => [...prev, entry])
+                    setShowPicker(false)
+                  }}
                   onClose={() => setShowPicker(false)}
                 />
               ) : (
@@ -190,6 +263,10 @@ export const LogWorkoutModal = ({ visible, date, onClose }: LogWorkoutModalProps
                       entry={entry}
                       onChange={(updated) => updateEntry(i, updated)}
                       onRemove={() => removeEntry(i)}
+                      onMoveUp={() => moveEntry(i, 'up')}
+                      onMoveDown={() => moveEntry(i, 'down')}
+                      isFirst={i === 0}
+                      isLast={i === entries.length - 1}
                     />
                   ))}
 
@@ -204,26 +281,30 @@ export const LogWorkoutModal = ({ visible, date, onClose }: LogWorkoutModalProps
                     <Text className='text-sm text-[#B872FF]'>Adicionar exercício</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity
-                    onPress={() => setSaveAsTemplate(!saveAsTemplate)}
-                    className='mb-4 flex-row items-center gap-3 rounded-xl bg-white/5 px-4 py-3'>
-                    <View
-                      className={`h-5 w-5 items-center justify-center rounded ${saveAsTemplate ? 'bg-[#B872FF]' : 'border border-gray-500'}`}>
-                      {saveAsTemplate && (
-                        <FontAwesome5
-                          name='check'
-                          size={10}
-                          color='white'
-                        />
-                      )}
-                    </View>
-                    <Text className='text-sm text-white'>Salvar como template</Text>
-                  </TouchableOpacity>
+                  {!isEditMode && (
+                    <TouchableOpacity
+                      onPress={() => setSaveAsTemplate(!saveAsTemplate)}
+                      className='mb-4 flex-row items-center gap-3 rounded-xl bg-white/5 px-4 py-3'>
+                      <View
+                        className={`h-5 w-5 items-center justify-center rounded ${saveAsTemplate ? 'bg-[#B872FF]' : 'border border-gray-500'}`}>
+                        {saveAsTemplate && (
+                          <FontAwesome5
+                            name='check'
+                            size={10}
+                            color='white'
+                          />
+                        )}
+                      </View>
+                      <Text className='text-sm text-white'>Salvar como template</Text>
+                    </TouchableOpacity>
+                  )}
 
                   <TouchableOpacity
                     onPress={handleConfirm}
                     className='items-center rounded-xl bg-[#B872FF] py-3'>
-                    <Text className='font-bold text-white'>Confirmar treino</Text>
+                    <Text className='font-bold text-white'>
+                      {isEditMode ? 'Salvar alterações' : 'Confirmar treino'}
+                    </Text>
                   </TouchableOpacity>
                 </>
               )}

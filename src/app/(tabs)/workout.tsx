@@ -4,11 +4,12 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { useFocusEffect } from 'expo-router'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
-import { ExerciseType } from '@/@types/workout'
+import { ExerciseType, type WorkoutLog } from '@/@types/workout'
 import { useWorkoutContext } from '@/components/context/workout/useWorkoutContext'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import { LogWorkoutModal } from '@/components/workout/LogWorkoutModal'
 import { TemplatesModal } from '@/components/workout/TemplatesModal'
+import { formatWeekRange } from '@/lib/utils/workout'
 
 const toDateString = (date: Date): string => date.toISOString().split('T')[0]
 
@@ -25,6 +26,7 @@ export default function Workout() {
   const [openLogs, setOpenLogs] = useState<string[]>([])
   const [showLogModal, setShowLogModal] = useState<boolean>(false)
   const [showTemplatesModal, setShowTemplatesModal] = useState<boolean>(false)
+  const [editingLog, setEditingLog] = useState<WorkoutLog | null>(null)
 
   useFocusEffect(
     useCallback(() => {
@@ -34,7 +36,8 @@ export default function Workout() {
 
   const today = toDateString(new Date())
   const dayLogs = getDayLogs(currentDate)
-  const weeklyStats = getWeeklyStats()
+  const weeklyStats = getWeeklyStats(currentDate)
+  const weekRange = formatWeekRange(currentDate)
   const isToday = currentDate === today
 
   const goBack = () => {
@@ -58,9 +61,8 @@ export default function Workout() {
         showsVerticalScrollIndicator={false}>
         <Text className='mb-6 text-center text-2xl font-bold text-white'>Seus treinos</Text>
 
-        {/* Recap semanal */}
         <View className='mb-6 rounded-2xl border border-[#B872FF]/40 bg-[#B872FF]/20 p-4'>
-          <Text className='mb-1 text-center text-xs text-gray-400'>Esta semana</Text>
+          <Text className='mb-1 text-center text-xs text-gray-400'>Semana {weekRange}</Text>
           <Text className='text-center text-3xl font-bold text-white'>
             {weeklyStats.totalWorkouts}{' '}
             <Text className='text-xl font-normal text-gray-300'>
@@ -94,7 +96,6 @@ export default function Workout() {
           </View>
         </View>
 
-        {/* Navegação de data */}
         <View className='mb-4 flex-row items-center justify-between'>
           <TouchableOpacity
             onPress={goBack}
@@ -120,7 +121,6 @@ export default function Workout() {
           </TouchableOpacity>
         </View>
 
-        {/* Botões de ação */}
         <View className='mb-4 flex-row gap-3'>
           <TouchableOpacity
             onPress={() => setShowLogModal(true)}
@@ -144,7 +144,6 @@ export default function Workout() {
           </TouchableOpacity>
         </View>
 
-        {/* Treinos do dia */}
         {dayLogs.length === 0 ? (
           <View className='items-center py-10'>
             <FontAwesome5
@@ -174,6 +173,15 @@ export default function Workout() {
                     </Text>
                   </View>
                   <View className='flex-row items-center gap-3'>
+                    <TouchableOpacity
+                      onPress={() => setEditingLog(log)}
+                      className='p-1'>
+                      <FontAwesome5
+                        name='edit'
+                        size={13}
+                        color='#B872FF'
+                      />
+                    </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => removeLog(log.id)}
                       className='p-1'>
@@ -225,6 +233,15 @@ export default function Workout() {
         date={currentDate}
         onClose={() => setShowLogModal(false)}
       />
+
+      {editingLog && (
+        <LogWorkoutModal
+          visible={!!editingLog}
+          date={currentDate}
+          editLog={editingLog}
+          onClose={() => setEditingLog(null)}
+        />
+      )}
 
       <TemplatesModal
         visible={showTemplatesModal}
