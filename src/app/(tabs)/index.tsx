@@ -1,133 +1,259 @@
-import { ScrollView, Text, View } from 'react-native'
+import { useCallback, useState } from 'react'
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
-import { useUserContext } from '@/components/context/useUserContext'
+import { useFocusEffect } from 'expo-router'
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
+
+import { MEAL_LABELS, type MealId } from '@/@types/diet'
+import { useDietContext } from '@/components/context/diet/useDietContext'
+import { useUserContext } from '@/components/context/user/useUserContext'
+import { AddEntryModal } from '@/components/diet/AddEntryModal'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
-import ScreenPageTitle from '@/components/ScreenPageTitle'
+import { calculateNutritionGoal, getCalorieStatus } from '@/lib/utils/nutrition'
 
-const meals = [
-  {
-    title: 'Café da Manhã',
-    foods: [
-      { name: 'Aveia (50g)', calories: 200, protein: 7, carbs: 33, fat: 4 },
-      { name: 'Banana', calories: 90, protein: 1, carbs: 23, fat: 0 },
-      { name: 'Café sem açúcar', calories: 5, protein: 0, carbs: 1, fat: 0 },
-    ],
-  },
-  {
-    title: 'Almoço',
-    foods: [
-      { name: 'Arroz (150g)', calories: 210, protein: 4, carbs: 45, fat: 1 },
-      { name: 'Feijão (100g)', calories: 90, protein: 5, carbs: 16, fat: 1 },
-      { name: 'Frango (200g)', calories: 330, protein: 62, carbs: 0, fat: 7 },
-    ],
-  },
-  {
-    title: 'Lanche da Tarde',
-    foods: [
-      { name: 'Maçã', calories: 70, protein: 0, carbs: 19, fat: 0 },
-      {
-        name: 'Iogurte natural (170g)',
-        calories: 120,
-        protein: 9,
-        carbs: 12,
-        fat: 4,
-      },
-    ],
-  },
-  {
-    title: 'Janta',
-    foods: [
-      {
-        name: 'Batata doce (150g)',
-        calories: 140,
-        protein: 2,
-        carbs: 33,
-        fat: 0,
-      },
-      {
-        name: 'Carne moída (200g)',
-        calories: 300,
-        protein: 41,
-        carbs: 0,
-        fat: 14,
-      },
-    ],
-  },
-]
+const toDateString = (date: Date): string => date.toISOString().split('T')[0]
 
-const getGreetingAndSubtitle = () => {
+const formatDate = (dateStr: string): string => {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  return date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+const getGreeting = () => {
   const hour = new Date().getHours()
-
-  if (hour >= 5 && hour < 12) {
-    return {
-      greeting: 'Bom dia',
-      subtitle: 'Hoje é um ótimo dia para se cuidar.',
-    }
-  }
-
-  if (hour >= 12 && hour < 18) {
-    return {
-      greeting: 'Boa tarde',
-      subtitle: 'Continue firme, você está no caminho certo.',
-    }
-  }
-
-  return {
-    greeting: 'Boa noite',
-    subtitle: 'Feche o dia com leveza e equilíbrio.',
-  }
+  if (hour >= 5 && hour < 12)
+    return { greeting: 'Bom dia', subtitle: 'Hoje é um ótimo dia para se cuidar.' }
+  if (hour >= 12 && hour < 18)
+    return { greeting: 'Boa tarde', subtitle: 'Continue firme, você está no caminho certo.' }
+  return { greeting: 'Boa noite', subtitle: 'Feche o dia com leveza e equilíbrio.' }
 }
 
 const Index = () => {
   const { currentUser } = useUserContext()
-  const { greeting, subtitle } = getGreetingAndSubtitle()
+  const { getDayDiet, removeEntry, getDayTotalCalories, getDayTotalMacros } = useDietContext()
+  const { greeting, subtitle } = getGreeting()
+
+  const [currentDate, setCurrentDate] = useState<string>(toDateString(new Date()))
+  const [openMeals, setOpenMeals] = useState<MealId[]>([])
+  const [modalMeal, setModalMeal] = useState<MealId | null>(null)
+
+  useFocusEffect(
+    useCallback(() => {
+      setCurrentDate(toDateString(new Date()))
+    }, []),
+  )
+
+  const today = toDateString(new Date())
+  const dayDiet = getDayDiet(currentDate)
+  const totalCalories = getDayTotalCalories(currentDate)
+  const totalMacros = getDayTotalMacros(currentDate)
+  const nutritionGoal = currentUser ? calculateNutritionGoal(currentUser) : null
+
+  const status = nutritionGoal ? getCalorieStatus(totalCalories, nutritionGoal.calories) : null
+
+  const statusConfig = {
+    on_track: {
+      icon: 'check-circle' as const,
+      color: '#22c55e',
+      message: 'No caminho certo',
+    },
+    below: {
+      icon: 'arrow-circle-down' as const,
+      color: '#facc15',
+      message: 'Você ainda pode comer mais',
+    },
+    above: {
+      icon: 'exclamation-circle' as const,
+      color: '#ef4444',
+      message: 'Meta ultrapassada',
+    },
+  }
+
+  const goBack = () => {
+    const [y, m, d] = currentDate.split('-').map(Number)
+    setCurrentDate(toDateString(new Date(y, m - 1, d - 1)))
+  }
+
+  const goForward = () => {
+    const [y, m, d] = currentDate.split('-').map(Number)
+    const nextStr = toDateString(new Date(y, m - 1, d + 1))
+    if (nextStr <= today) setCurrentDate(nextStr)
+  }
+
+  const toggleMeal = (id: MealId) => {
+    setOpenMeals((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]))
+  }
+
+  const isToday = currentDate === today
 
   return (
     <ScreenPageContainer className='py-20'>
-      <ScrollView className='px-5 pb-10'>
-        <ScreenPageTitle className='text-2xl'>
+      <ScrollView
+        className='px-5'
+        showsVerticalScrollIndicator={false}>
+        <Text className='text-center text-2xl font-bold text-white'>
           {greeting} {currentUser?.name?.split(' ')[0]}
-        </ScreenPageTitle>
-        <Text className='text-center text-lg font-medium text-white'>{subtitle}</Text>
+        </Text>
+        <Text className='mb-6 mt-1 text-center text-base text-white'>{subtitle}</Text>
 
-        <Text className='mb-3 mt-8 text-lg font-semibold text-white'>Refeições de hoje</Text>
+        <View className='mb-2 flex-row items-center justify-between'>
+          <TouchableOpacity
+            onPress={goBack}
+            className='p-2'>
+            <FontAwesome5
+              name='chevron-left'
+              size={16}
+              color='white'
+            />
+          </TouchableOpacity>
+          <Text className='font-semibold capitalize text-white'>
+            {isToday ? 'Hoje' : formatDate(currentDate)}
+          </Text>
+          <TouchableOpacity
+            onPress={goForward}
+            disabled={isToday}
+            className='p-2'>
+            <FontAwesome5
+              name='chevron-right'
+              size={16}
+              color={isToday ? '#444' : 'white'}
+            />
+          </TouchableOpacity>
+        </View>
 
-        {meals.map((meal, index) => {
-          const total = meal.foods.reduce(
-            (acc, f) => ({
-              calories: acc.calories + f.calories,
-              protein: acc.protein + f.protein,
-              carbs: acc.carbs + f.carbs,
-              fat: acc.fat + f.fat,
-            }),
-            { calories: 0, protein: 0, carbs: 0, fat: 0 },
-          )
+        <View className='mb-6 rounded-2xl border border-[#B872FF]/40 bg-[#B872FF]/20 p-4'>
+          <Text className='mb-1 text-center text-sm text-gray-400'>Total consumido</Text>
+          <Text className='text-center text-3xl font-bold text-white'>{totalCalories} kcal</Text>
+
+          {nutritionGoal && (
+            <Text className='mt-1 text-center text-sm text-gray-400'>
+              Meta: {nutritionGoal.calories} kcal
+            </Text>
+          )}
+
+          {status && (
+            <View className='mt-3 flex-row items-center justify-center gap-2'>
+              <FontAwesome5
+                name={statusConfig[status].icon}
+                size={16}
+                color={statusConfig[status].color}
+              />
+              <Text
+                style={{ color: statusConfig[status].color }}
+                className='text-sm font-semibold'>
+                {statusConfig[status].message}
+              </Text>
+            </View>
+          )}
+
+          <View className='mt-3 flex-row justify-around border-t border-white/10 pt-3'>
+            <View className='items-center'>
+              <Text className='text-xs text-gray-400'>Proteína</Text>
+              <Text className='font-semibold text-white'>{totalMacros.protein}g</Text>
+              {nutritionGoal && (
+                <Text className='text-xs text-gray-500'>/ {nutritionGoal.protein}g</Text>
+              )}
+            </View>
+            <View className='items-center'>
+              <Text className='text-xs text-gray-400'>Carboidrato</Text>
+              <Text className='font-semibold text-white'>{totalMacros.carbs}g</Text>
+              {nutritionGoal && (
+                <Text className='text-xs text-gray-500'>/ {nutritionGoal.carbs}g</Text>
+              )}
+            </View>
+            <View className='items-center'>
+              <Text className='text-xs text-gray-400'>Gordura</Text>
+              <Text className='font-semibold text-white'>{totalMacros.fat}g</Text>
+              {nutritionGoal && (
+                <Text className='text-xs text-gray-500'>/ {nutritionGoal.fat}g</Text>
+              )}
+            </View>
+          </View>
+        </View>
+
+        {dayDiet.meals.map((meal) => {
+          const isOpen = openMeals.includes(meal.id)
+          const mealTotal = meal.entries.reduce((s, e) => s + e.calories, 0)
 
           return (
             <View
-              key={index}
-              className='mb-5 rounded-xl border border-white/10 p-4'>
-              <Text className='text-base font-semibold text-white'>{meal.title}</Text>
-
-              <Text className='mb-3 mt-1 text-sm text-gray-400'>
-                {total.calories} kcal • {total.protein}P • {total.carbs}C • {total.fat}G
-              </Text>
-
-              {meal.foods.map((food, i) => (
-                <View
-                  key={i}
-                  className='flex-row justify-between py-1'>
-                  <Text className='text-gray-300'>{food.name}</Text>
-
-                  <Text className='text-gray-400'>
-                    {food.calories} kcal • {food.protein}P • {food.carbs}C • {food.fat}G
+              key={meal.id}
+              className='mb-4 overflow-hidden rounded-2xl border border-white/10'>
+              <TouchableOpacity
+                onPress={() => toggleMeal(meal.id)}
+                className='flex-row items-center justify-between p-4'>
+                <View>
+                  <Text className='font-semibold text-white'>{MEAL_LABELS[meal.id]}</Text>
+                  <Text className='mt-0.5 text-xs text-gray-400'>
+                    {meal.entries.length === 0
+                      ? 'Nenhum alimento'
+                      : `${meal.entries.length} item(s) • ${mealTotal} kcal`}
                   </Text>
                 </View>
-              ))}
+                <FontAwesome5
+                  name={isOpen ? 'chevron-up' : 'chevron-down'}
+                  size={14}
+                  color='white'
+                />
+              </TouchableOpacity>
+
+              {isOpen && (
+                <View className='px-4 pb-4'>
+                  {meal.entries.length === 0 ? (
+                    <Text className='py-2 text-sm text-gray-500'>Nenhum alimento adicionado.</Text>
+                  ) : (
+                    meal.entries.map((entry) => (
+                      <View
+                        key={entry.id}
+                        className='flex-row items-center justify-between border-b border-white/5 py-2'>
+                        <View className='flex-1'>
+                          <Text className='text-sm text-white'>{entry.foodName}</Text>
+                          <Text className='text-xs text-gray-400'>
+                            {entry.quantity}
+                            {entry.unit} • {entry.calories} kcal
+                          </Text>
+                          <Text className='text-xs text-gray-500'>
+                            P: {entry.protein}g • C: {entry.carbs}g • G: {entry.fat}g
+                          </Text>
+                        </View>
+                        <TouchableOpacity
+                          onPress={() => removeEntry(currentDate, meal.id, entry.id)}
+                          className='p-2'>
+                          <FontAwesome5
+                            name='trash-alt'
+                            size={12}
+                            color='#ef4444'
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    ))
+                  )}
+
+                  <TouchableOpacity
+                    onPress={() => setModalMeal(meal.id)}
+                    className='mt-3 flex-row items-center gap-2'>
+                    <FontAwesome5
+                      name='plus-circle'
+                      size={14}
+                      color='#B872FF'
+                    />
+                    <Text className='text-sm text-[#B872FF]'>Adicionar alimento</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           )
         })}
       </ScrollView>
+
+      {modalMeal && (
+        <AddEntryModal
+          visible={true}
+          mealId={modalMeal}
+          date={currentDate}
+          onClose={() => setModalMeal(null)}
+        />
+      )}
     </ScreenPageContainer>
   )
 }

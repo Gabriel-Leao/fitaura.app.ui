@@ -5,7 +5,7 @@ import { ActivityIndicator, Alert, View } from 'react-native'
 import { Link } from 'expo-router'
 
 import type { SignInFormData } from '@/@types/forms'
-import { useUserContext } from '@/components/context/useUserContext'
+import { useUserContext } from '@/components/context/user/useUserContext'
 import CustomButton from '@/components/CustomButton'
 import CustomInput from '@/components/CustomInput'
 import FormWrapper from '@/components/FormWrapper'
