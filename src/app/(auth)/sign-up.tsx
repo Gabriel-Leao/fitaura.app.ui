@@ -14,6 +14,7 @@ import FormWrapper from '@/components/FormWrapper'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import ScreenPageTitle from '@/components/ScreenPageTitle'
 import { ROUTES } from '@/constants/routes'
+import { VALIDATIONS } from '@/constants/validations'
 
 const SignUp = () => {
   const {
@@ -30,6 +31,7 @@ const SignUp = () => {
 
   const onCreatePressed = async (data: SignUpFormData) => {
     setIsSubmitting(true)
+
     try {
       await register(data)
       router.push(ROUTES.HOME.ROUTE)
@@ -43,6 +45,7 @@ const SignUp = () => {
   return (
     <ScreenPageContainer className='gap-8 pt-24'>
       <ScreenPageTitle>Criar conta</ScreenPageTitle>
+
       <ScrollView showsVerticalScrollIndicator={false}>
         <FormWrapper>
           <View className='items-center gap-3'>
@@ -50,13 +53,7 @@ const SignUp = () => {
               name='name'
               placeholder='Nome completo'
               control={control}
-              rules={{
-                required: 'Nome é obrigatório',
-                pattern: {
-                  value: /^[A-Za-zÀ-ÖØ-öø-ÿ]{3,}(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]{2,})+$/,
-                  message: 'Nome inválido',
-                },
-              }}
+              rules={VALIDATIONS.name}
             />
 
             <CustomInput
@@ -65,13 +62,10 @@ const SignUp = () => {
               control={control}
               keyboardType='email-address'
               rules={{
-                required: 'E-mail é obrigatório',
-                pattern: {
-                  value: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-                  message: 'E-mail inválido',
-                },
+                ...VALIDATIONS.email,
                 validate: (value: string) => {
                   const exists = users.some((u) => u.email.toLowerCase() === value.toLowerCase())
+
                   return !exists || 'E-mail já está em uso'
                 },
               }}
@@ -81,11 +75,8 @@ const SignUp = () => {
               name='password'
               placeholder='Senha'
               control={control}
-              secureTextEntry={true}
-              rules={{
-                required: 'Senha é obrigatória',
-                minLength: { value: 8, message: 'A senha deve ter no mínimo 8 caracteres' },
-              }}
+              secureTextEntry
+              rules={VALIDATIONS.password}
             />
 
             <View className='flex-row justify-center gap-8'>
@@ -95,12 +86,7 @@ const SignUp = () => {
                 control={control}
                 keyboardType='numeric'
                 viewClassname='w-1/3'
-                rules={{
-                  required: 'Idade é obrigatória',
-                  min: { value: 18, message: 'Mínimo 18 anos' },
-                  max: { value: 120, message: 'Idade muito alta' },
-                  pattern: { value: /^[0-9]+$/, message: 'Apenas números inteiros' },
-                }}
+                rules={VALIDATIONS.age}
               />
 
               <CustomInput
@@ -109,12 +95,7 @@ const SignUp = () => {
                 control={control}
                 keyboardType='numeric'
                 viewClassname='w-2/5'
-                rules={{
-                  required: 'Altura é obrigatória',
-                  pattern: { value: /^[0-9]+$/, message: 'Use apenas números (ex: 175)' },
-                  min: { value: 120, message: 'Mínima 120 cm' },
-                  max: { value: 250, message: 'Máxima 250 cm' },
-                }}
+                rules={VALIDATIONS.height}
               />
             </View>
 
@@ -123,12 +104,7 @@ const SignUp = () => {
               placeholder='Peso em kg'
               control={control}
               keyboardType='numeric'
-              rules={{
-                required: 'Peso é obrigatório',
-                pattern: { value: /^[0-9]+$/, message: 'Use apenas números (ex: 75)' },
-                min: { value: 30, message: 'Peso mínimo é 30 kg' },
-                max: { value: 300, message: 'Peso máximo é 300 kg' },
-              }}
+              rules={VALIDATIONS.weight}
             />
 
             <CustomPicker
@@ -179,6 +155,7 @@ const SignUp = () => {
             )}
           </View>
         </FormWrapper>
+
         <Link
           href={ROUTES.SIGN_IN.ROUTE}
           className='pt-12 text-center text-[#fff]'>

@@ -12,6 +12,7 @@ import FormWrapper from '@/components/FormWrapper'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import ScreenPageTitle from '@/components/ScreenPageTitle'
 import { ROUTES } from '@/constants/routes'
+import { VALIDATIONS } from '@/constants/validations'
 
 const SignIn = () => {
   const {
@@ -28,6 +29,7 @@ const SignIn = () => {
 
   const onSignInPressed = async (data: SignInFormData) => {
     setIsSubmitting(true)
+
     try {
       await login(data.email, data.password)
     } catch (error: unknown) {
@@ -40,6 +42,7 @@ const SignIn = () => {
   return (
     <ScreenPageContainer className='justify-center gap-8'>
       <ScreenPageTitle>Login</ScreenPageTitle>
+
       <FormWrapper>
         <View className='items-center gap-3'>
           <CustomInput
@@ -47,27 +50,15 @@ const SignIn = () => {
             placeholder='E-mail'
             control={control}
             keyboardType='email-address'
-            rules={{
-              required: 'E-mail é obrigatório',
-              pattern: {
-                value: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-                message: 'E-mail inválido',
-              },
-            }}
+            rules={VALIDATIONS.email}
           />
 
           <CustomInput
             name='password'
             placeholder='Senha'
             control={control}
-            secureTextEntry={true}
-            rules={{
-              required: 'Senha é obrigatória',
-              minLength: {
-                value: 8,
-                message: 'A senha deve ter no mínimo 8 caracteres',
-              },
-            }}
+            secureTextEntry
+            rules={VALIDATIONS.password}
           />
 
           {isSubmitting ? (
@@ -84,6 +75,7 @@ const SignIn = () => {
           )}
         </View>
       </FormWrapper>
+
       <Link
         href={ROUTES.SIGN_UP.ROUTE}
         className='pt-12 text-center text-[#fff]'>

@@ -21,6 +21,7 @@ import CustomPicker from '@/components/CustomPicker'
 import FormWrapper from '@/components/FormWrapper'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import { ROUTES } from '@/constants/routes'
+import { VALIDATIONS } from '@/constants/validations'
 
 type EditFormData = {
   email: string
@@ -40,6 +41,7 @@ const Profile = () => {
     updateAvatar,
     updateUser,
   } = useUserContext()
+
   const [isUploading, setIsUploading] = useState<boolean>(false)
   const [isEditing, setIsEditing] = useState<boolean>(false)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -73,6 +75,7 @@ const Profile = () => {
       goal: user.goal,
       activityLevel: user.activityLevel,
     })
+
     setIsEditing(true)
   }
 
@@ -80,6 +83,7 @@ const Profile = () => {
 
   const onSavePressed = async (data: EditFormData) => {
     setIsSubmitting(true)
+
     try {
       await updateUser(user.id, {
         email: data.email.toLowerCase(),
@@ -89,6 +93,7 @@ const Profile = () => {
         goal: data.goal,
         activityLevel: data.activityLevel,
       })
+
       setIsEditing(false)
     } catch (error: unknown) {
       Alert.alert('Erro', (error as Error).message)
@@ -130,36 +135,47 @@ const Profile = () => {
 
   const openCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync()
+
     if (status !== 'granted') {
       Alert.alert('Permissão negada', 'Habilite o acesso à câmera nas configurações.')
       return
     }
+
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: 'images',
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
     })
-    if (!result.canceled) await saveAvatar(result.assets[0].uri)
+
+    if (!result.canceled) {
+      await saveAvatar(result.assets[0].uri)
+    }
   }
 
   const openGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+
     if (status !== 'granted') {
       Alert.alert('Permissão negada', 'Habilite o acesso à galeria nas configurações.')
       return
     }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: 'images',
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
     })
-    if (!result.canceled) await saveAvatar(result.assets[0].uri)
+
+    if (!result.canceled) {
+      await saveAvatar(result.assets[0].uri)
+    }
   }
 
   const saveAvatar = async (uri: string) => {
     setIsUploading(true)
+
     try {
       await updateAvatar(user.id, uri)
     } catch (error: unknown) {
@@ -203,6 +219,7 @@ const Profile = () => {
                 />
               </View>
             )}
+
             <View className='absolute bottom-0 right-0 rounded-full bg-[#B872FF] p-2'>
               {isUploading ? (
                 <ActivityIndicator
@@ -220,6 +237,7 @@ const Profile = () => {
           </TouchableOpacity>
 
           <Text className='mt-2 text-xl font-semibold text-white'>{user.name}</Text>
+
           <Text className='mt-0.5 text-sm text-gray-400'>{user.age} anos</Text>
 
           {!isEditing && (
@@ -231,6 +249,7 @@ const Profile = () => {
                 size={14}
                 color='#B872FF'
               />
+
               <Text className='text-sm text-[#B872FF]'>Editar perfil</Text>
             </TouchableOpacity>
           )}
@@ -245,15 +264,12 @@ const Profile = () => {
                 control={control}
                 keyboardType='email-address'
                 rules={{
-                  required: 'E-mail é obrigatório',
-                  pattern: {
-                    value: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-                    message: 'E-mail inválido',
-                  },
+                  ...VALIDATIONS.email,
                   validate: (value: string) => {
                     const exists = users.some(
                       (u) => u.email.toLowerCase() === value.toLowerCase() && u.id !== user.id,
                     )
+
                     return !exists || 'E-mail já está em uso'
                   },
                 }}
@@ -264,12 +280,7 @@ const Profile = () => {
                 placeholder='Altura em cm'
                 control={control}
                 keyboardType='numeric'
-                rules={{
-                  required: 'Altura é obrigatória',
-                  pattern: { value: /^[0-9]+$/, message: 'Use apenas números (ex: 175)' },
-                  min: { value: 120, message: 'Altura mínima permitida é 120 cm' },
-                  max: { value: 250, message: 'Altura máxima permitida é 250 cm' },
-                }}
+                rules={VALIDATIONS.height}
               />
 
               <CustomInput
@@ -277,12 +288,7 @@ const Profile = () => {
                 placeholder='Peso em kg'
                 control={control}
                 keyboardType='numeric'
-                rules={{
-                  required: 'Peso é obrigatório',
-                  pattern: { value: /^[0-9]+$/, message: 'Use apenas números (ex: 75)' },
-                  min: { value: 30, message: 'Peso mínimo é 30 kg' },
-                  max: { value: 300, message: 'Peso máximo é 300 kg' },
-                }}
+                rules={VALIDATIONS.weight}
               />
 
               <CustomPicker
@@ -349,6 +355,7 @@ const Profile = () => {
                 key={label}
                 className='border-b border-white/10 pb-3'>
                 <Text className='text-xs text-gray-400'>{label}</Text>
+
                 <Text className='mt-0.5 text-base font-semibold text-white'>{value}</Text>
               </View>
             ))}
@@ -365,6 +372,7 @@ const Profile = () => {
                 size={20}
                 color='white'
               />
+
               <Text className='text-lg font-semibold text-white'>Sair</Text>
             </TouchableOpacity>
 
@@ -376,6 +384,7 @@ const Profile = () => {
                 size={20}
                 color='white'
               />
+
               <Text className='text-lg font-semibold text-white'>Apagar conta</Text>
             </TouchableOpacity>
           </View>

@@ -77,6 +77,14 @@ export default function TabsLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name={ROUTES.ORDERS.NAME}
+        options={{
+          title: ROUTES.ORDERS.LABEL,
+          href: null,
+        }}
+      />
     </Tabs>
   )
 }
