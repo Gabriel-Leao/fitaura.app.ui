@@ -8,6 +8,8 @@ Aplicativo mobile focado em auxiliar na organização de rotina fitness, permiti
 
 ## [![Assistir no YouTube](https://img.shields.io/badge/YouTube-Assistir%20vídeo-red?logo=youtube)](https://youtu.be/1lH7rLDA05w)
 
+---
+
 ## Membros do Grupo
 
 | Nome                                  | RM     |
