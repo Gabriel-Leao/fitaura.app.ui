@@ -5,7 +5,9 @@ import * as Crypto from 'expo-crypto'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import type { User } from '@/@types/user'
+import { CUSTOM_FOODS_STORAGE_KEY, DIET_STORAGE_KEY } from '@/constants/diet'
 import { CURRENT_USER_KEY, USERS_STORAGE_KEY } from '@/constants/usersKey'
+import { CUSTOM_EXERCISES_KEY, CUSTOM_TEMPLATES_KEY, WORKOUT_LOGS_KEY } from '@/constants/workout'
 
 type UserContextType = {
   users: User[]
@@ -135,9 +137,20 @@ export const UserProvider = ({ children }: React.PropsWithChildren) => {
 
     const updatedUsers = users.filter((u) => u.id !== id)
     setUsers(updatedUsers)
+    await AsyncStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers))
 
     if (currentUser?.id === id) {
       setCurrentUser(null)
+      await AsyncStorage.multiRemove([
+        CURRENT_USER_KEY,
+        `${DIET_STORAGE_KEY}:${id}`,
+        `${CUSTOM_FOODS_STORAGE_KEY}:${id}`,
+        `${WORKOUT_LOGS_KEY}:${id}`,
+        `${CUSTOM_TEMPLATES_KEY}:${id}`,
+        `${CUSTOM_EXERCISES_KEY}:${id}`,
+        `@fitaura:cart:${id}`,
+        `@fitaura:orders:${id}`,
+      ])
     }
   }
 

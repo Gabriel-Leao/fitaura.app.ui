@@ -71,21 +71,37 @@ const buildLogStats = (exercises: ExerciseEntry[]) => ({
   }, 0),
 })
 
-export const WorkoutProvider = ({ children }: React.PropsWithChildren) => {
+type WorkoutProviderProps = React.PropsWithChildren<{ userId: string | null }>
+
+export const WorkoutProvider = ({ children, userId }: WorkoutProviderProps) => {
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([])
   const [customTemplates, setCustomTemplates] = useState<WorkoutTemplate[]>([])
   const [customExercises, setCustomExercises] = useState<Exercise[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
+  const logsKey = userId ? `${WORKOUT_LOGS_KEY}:${userId}` : null
+  const templatesKey = userId ? `${CUSTOM_TEMPLATES_KEY}:${userId}` : null
+  const exercisesKey = userId ? `${CUSTOM_EXERCISES_KEY}:${userId}` : null
+
   const allExercises = [...DEFAULT_EXERCISES, ...customExercises]
 
   useEffect(() => {
+    setIsLoading(true)
+    setWorkoutLogs([])
+    setCustomTemplates([])
+    setCustomExercises([])
+
+    if (!logsKey || !templatesKey || !exercisesKey) {
+      setIsLoading(false)
+      return
+    }
+
     const load = async () => {
       try {
         const [logsJson, templatesJson, exercisesJson] = await Promise.all([
-          AsyncStorage.getItem(WORKOUT_LOGS_KEY),
-          AsyncStorage.getItem(CUSTOM_TEMPLATES_KEY),
-          AsyncStorage.getItem(CUSTOM_EXERCISES_KEY),
+          AsyncStorage.getItem(logsKey),
+          AsyncStorage.getItem(templatesKey),
+          AsyncStorage.getItem(exercisesKey),
         ])
         if (logsJson) setWorkoutLogs(JSON.parse(logsJson))
         if (templatesJson) setCustomTemplates(JSON.parse(templatesJson))
@@ -96,20 +112,23 @@ export const WorkoutProvider = ({ children }: React.PropsWithChildren) => {
         setIsLoading(false)
       }
     }
+
     load()
-  }, [])
+  }, [logsKey, templatesKey, exercisesKey])
 
   useEffect(() => {
-    if (!isLoading) AsyncStorage.setItem(WORKOUT_LOGS_KEY, JSON.stringify(workoutLogs))
-  }, [workoutLogs, isLoading])
+    if (!isLoading && logsKey) AsyncStorage.setItem(logsKey, JSON.stringify(workoutLogs))
+  }, [workoutLogs, isLoading, logsKey])
 
   useEffect(() => {
-    if (!isLoading) AsyncStorage.setItem(CUSTOM_TEMPLATES_KEY, JSON.stringify(customTemplates))
-  }, [customTemplates, isLoading])
+    if (!isLoading && templatesKey)
+      AsyncStorage.setItem(templatesKey, JSON.stringify(customTemplates))
+  }, [customTemplates, isLoading, templatesKey])
 
   useEffect(() => {
-    if (!isLoading) AsyncStorage.setItem(CUSTOM_EXERCISES_KEY, JSON.stringify(customExercises))
-  }, [customExercises, isLoading])
+    if (!isLoading && exercisesKey)
+      AsyncStorage.setItem(exercisesKey, JSON.stringify(customExercises))
+  }, [customExercises, isLoading, exercisesKey])
 
   const getDayLogs = useCallback(
     (date: string) => workoutLogs.filter((l) => l.date === date),

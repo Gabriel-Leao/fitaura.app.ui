@@ -14,12 +14,18 @@ import * as ImagePicker from 'expo-image-picker'
 import { router } from 'expo-router'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
-import { ACTIVITY_LEVEL_LABELS, ActivityLevel, UserGoal, UserSex } from '@/@types/enums'
+import {
+  ACTIVITY_LEVEL_LABELS,
+  type ActivityLevel,
+  type UserGoal,
+  type UserSex,
+} from '@/@types/enums'
 import { useUserContext } from '@/components/context/user/useUserContext'
 import CustomInput from '@/components/CustomInput'
 import CustomPicker from '@/components/CustomPicker'
 import FormWrapper from '@/components/FormWrapper'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
+import { ACTIVITY_LEVEL_OPTIONS, GOAL_OPTIONS, SEX_OPTIONS } from '@/constants/pickerOptions'
 import { ROUTES } from '@/constants/routes'
 import { VALIDATIONS } from '@/constants/validations'
 
@@ -329,10 +335,7 @@ const Profile = () => {
                 name='sex'
                 placeholder='Sexo'
                 rules={{ required: 'Selecione seu sexo' }}
-                options={[
-                  { label: 'Masculino', value: UserSex.Male },
-                  { label: 'Feminino', value: UserSex.Female },
-                ]}
+                options={SEX_OPTIONS}
               />
 
               <CustomPicker
@@ -340,11 +343,7 @@ const Profile = () => {
                 name='goal'
                 placeholder='Objetivo'
                 rules={{ required: 'Selecione seu objetivo' }}
-                options={[
-                  { label: 'Perder peso', value: UserGoal.LoseWeight },
-                  { label: 'Ganhar peso', value: UserGoal.GainWeight },
-                  { label: 'Manter peso', value: UserGoal.MaintainWeight },
-                ]}
+                options={GOAL_OPTIONS}
               />
 
               <CustomPicker
@@ -352,10 +351,7 @@ const Profile = () => {
                 name='activityLevel'
                 placeholder='Nível de atividade'
                 rules={{ required: 'Selecione seu nível de atividade' }}
-                options={Object.values(ActivityLevel).map((level) => ({
-                  label: ACTIVITY_LEVEL_LABELS[level],
-                  value: level,
-                }))}
+                options={ACTIVITY_LEVEL_OPTIONS}
               />
 
               {isSubmitting ? (

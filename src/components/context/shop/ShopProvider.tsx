@@ -32,7 +32,7 @@ export const ShopContext = createContext<ShopContextType | undefined>(undefined)
 
 export const ShopProvider = ({ children }: React.PropsWithChildren) => {
   const { currentUser } = useUserContext()
-  const userId = currentUser?.id ?? 'guest'
+  const userId = currentUser!.id
 
   const [stockMap, setStockMap] = useState<Record<string, number>>({})
   const [iotReading, setIotReading] = useState<IoTReading | null>(null)

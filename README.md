@@ -4,6 +4,10 @@ Aplicativo mobile focado em auxiliar na organização de rotina fitness, permiti
 
 ---
 
+## Demonstração
+
+## [![Assistir no YouTube](https://img.shields.io/badge/YouTube-Assistir%20vídeo-red?logo=youtube)](https://youtu.be/1lH7rLDA05w)
+
 ## Membros do Grupo
 
 | Nome                                  | RM     |
@@ -98,13 +102,14 @@ fitaura.app.ui/
 │   │   ├── ScreenPageContainer.tsx
 │   │   └── ScreenPageTitle.tsx
 │   ├── constants/
-│   │   ├── diet.ts         # Chaves do AsyncStorage e lista padrão de alimentos
-│   │   ├── routes.ts       # Rotas tipadas com Href
-│   │   ├── shop.ts         # Chaves do AsyncStorage da loja
-│   │   ├── store.ts        # Dados mockados dos produtos
-│   │   ├── usersKey.ts     # Chaves do AsyncStorage de usuários
-│   │   ├── validations.ts  # Validação dos forms
-│   │   └── workout.ts      # Chaves do AsyncStorage, exercícios padrão e templates sugeridos
+│   │   ├── diet.ts            # Chaves do AsyncStorage e lista padrão de alimentos
+│   │   ├── pickerOptions.ts   # Opções reutilizáveis para os pickers de sexo, objetivo e nível de atividade
+│   │   ├── routes.ts          # Rotas tipadas com Href
+│   │   ├── shop.ts            # Chaves do AsyncStorage da loja
+│   │   ├── store.ts           # Dados mockados dos produtos
+│   │   ├── usersKey.ts        # Chaves do AsyncStorage de usuários
+│   │   ├── validations.ts     # Validação dos forms
+│   │   └── workout.ts         # Chaves do AsyncStorage, exercícios padrão e templates sugeridos
 │   └── lib/
 │       └── utils/
 │           ├── cn.ts        # Utilitário clsx + twMerge

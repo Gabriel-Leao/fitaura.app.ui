@@ -25,19 +25,33 @@ const buildEmptyDay = (date: string): DayDiet => ({
   meals: Object.values(MealId).map((id) => ({ id, entries: [] })),
 })
 
-export const DietProvider = ({ children }: React.PropsWithChildren) => {
+type DietProviderProps = React.PropsWithChildren<{ userId: string | null }>
+
+export const DietProvider = ({ children, userId }: DietProviderProps) => {
   const [dietData, setDietData] = useState<DayDiet[]>([])
   const [customFoods, setCustomFoods] = useState<Food[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
+  const dietKey = userId ? `${DIET_STORAGE_KEY}:${userId}` : null
+  const customFoodsKey = userId ? `${CUSTOM_FOODS_STORAGE_KEY}:${userId}` : null
+
   const allFoods = [...DEFAULT_FOODS, ...customFoods]
 
   useEffect(() => {
+    setIsLoading(true)
+    setDietData([])
+    setCustomFoods([])
+
+    if (!dietKey || !customFoodsKey) {
+      setIsLoading(false)
+      return
+    }
+
     const load = async () => {
       try {
         const [dietJson, customJson] = await Promise.all([
-          AsyncStorage.getItem(DIET_STORAGE_KEY),
-          AsyncStorage.getItem(CUSTOM_FOODS_STORAGE_KEY),
+          AsyncStorage.getItem(dietKey),
+          AsyncStorage.getItem(customFoodsKey),
         ])
         if (dietJson) setDietData(JSON.parse(dietJson))
         if (customJson) setCustomFoods(JSON.parse(customJson))
@@ -47,16 +61,21 @@ export const DietProvider = ({ children }: React.PropsWithChildren) => {
         setIsLoading(false)
       }
     }
+
     load()
-  }, [])
+  }, [dietKey, customFoodsKey])
 
   useEffect(() => {
-    if (!isLoading) AsyncStorage.setItem(DIET_STORAGE_KEY, JSON.stringify(dietData))
-  }, [dietData, isLoading])
+    if (!isLoading && dietKey) {
+      AsyncStorage.setItem(dietKey, JSON.stringify(dietData))
+    }
+  }, [dietData, isLoading, dietKey])
 
   useEffect(() => {
-    if (!isLoading) AsyncStorage.setItem(CUSTOM_FOODS_STORAGE_KEY, JSON.stringify(customFoods))
-  }, [customFoods, isLoading])
+    if (!isLoading && customFoodsKey) {
+      AsyncStorage.setItem(customFoodsKey, JSON.stringify(customFoods))
+    }
+  }, [customFoods, isLoading, customFoodsKey])
 
   const getDayDiet = useCallback(
     (date: string): DayDiet => dietData.find((d) => d.date === date) ?? buildEmptyDay(date),
