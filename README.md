@@ -103,6 +103,7 @@ fitaura.app.ui/
 │   │   ├── shop.ts         # Chaves do AsyncStorage da loja
 │   │   ├── store.ts        # Dados mockados dos produtos
 │   │   ├── usersKey.ts     # Chaves do AsyncStorage de usuários
+│   │   ├── validations.ts  # Validação dos forms
 │   │   └── workout.ts      # Chaves do AsyncStorage, exercícios padrão e templates sugeridos
 │   └── lib/
 │       └── utils/

@@ -24,6 +24,8 @@ import { ROUTES } from '@/constants/routes'
 import { VALIDATIONS } from '@/constants/validations'
 
 type EditFormData = {
+  name: string
+  age: string
   email: string
   height: string
   weight: string
@@ -55,6 +57,8 @@ const Profile = () => {
     mode: 'onChange',
     reValidateMode: 'onChange',
     defaultValues: {
+      name: user?.name ?? '',
+      age: user?.age ? String(user.age) : '',
       email: user?.email ?? '',
       height: user?.height ?? '',
       weight: user?.weight ? String(user.weight) : '',
@@ -66,8 +70,10 @@ const Profile = () => {
 
   if (!user) return null
 
-  const onEditPressed = () => {
+  const resetForm = () => {
     reset({
+      name: user.name,
+      age: user.age ? String(user.age) : '',
       email: user.email,
       height: user.height ?? '',
       weight: user.weight ? String(user.weight) : '',
@@ -75,17 +81,25 @@ const Profile = () => {
       goal: user.goal,
       activityLevel: user.activityLevel,
     })
+  }
 
+  const onEditPressed = () => {
+    resetForm()
     setIsEditing(true)
   }
 
-  const onCancelPressed = () => setIsEditing(false)
+  const onCancelPressed = () => {
+    resetForm()
+    setIsEditing(false)
+  }
 
   const onSavePressed = async (data: EditFormData) => {
     setIsSubmitting(true)
 
     try {
       await updateUser(user.id, {
+        name: data.name.trim(),
+        age: Number(data.age),
         email: data.email.toLowerCase(),
         height: data.height,
         weight: Number(data.weight),
@@ -236,9 +250,13 @@ const Profile = () => {
             </View>
           </TouchableOpacity>
 
-          <Text className='mt-2 text-xl font-semibold text-white'>{user.name}</Text>
+          {!isEditing && (
+            <>
+              <Text className='mt-2 text-xl font-semibold text-white'>{user.name}</Text>
 
-          <Text className='mt-0.5 text-sm text-gray-400'>{user.age} anos</Text>
+              <Text className='mt-0.5 text-sm text-gray-400'>{user.age} anos</Text>
+            </>
+          )}
 
           {!isEditing && (
             <TouchableOpacity
@@ -258,6 +276,21 @@ const Profile = () => {
         {isEditing ? (
           <FormWrapper>
             <View className='mt-6 items-center gap-3 pb-6'>
+              <CustomInput
+                name='name'
+                placeholder='Nome'
+                control={control}
+                rules={VALIDATIONS.name}
+              />
+
+              <CustomInput
+                name='age'
+                placeholder='Idade'
+                control={control}
+                keyboardType='numeric'
+                rules={VALIDATIONS.age}
+              />
+
               <CustomInput
                 name='email'
                 placeholder='E-mail'
