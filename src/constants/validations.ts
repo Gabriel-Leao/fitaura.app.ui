@@ -2,7 +2,7 @@ export const VALIDATIONS = {
   name: {
     required: 'Nome é obrigatório',
     pattern: {
-      value: /^[A-Za-zÀ-ÖØ-öø-ÿ]{3,}(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]{2,})+$/,
+      value: /^\p{L}{3,}(?:\s+\p{L}{2,})+$/u,
       message: 'Nome inválido',
     },
   },

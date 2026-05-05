@@ -1,6 +1,8 @@
 import { createContext, useCallback, useEffect, useRef, useState } from 'react'
 import { Alert } from 'react-native'
 
+import Constants from 'expo-constants'
+
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { io, type Socket } from 'socket.io-client'
 
@@ -8,7 +10,8 @@ import type { CartItem, IoTReading, Order, OrderStatus } from '@/@types/shop'
 import { useUserContext } from '@/components/context/user/useUserContext'
 import { STORE_DATA } from '@/constants/store'
 
-const SOCKET_URL = 'http://localhost:3001'
+const localIp = Constants.expoConfig?.hostUri?.split(':')[0]
+const SOCKET_URL = `http://${localIp}:3001`
 
 const cartKey = (userId: string) => `@fitaura:cart:${userId}`
 const ordersKey = (userId: string) => `@fitaura:orders:${userId}`
