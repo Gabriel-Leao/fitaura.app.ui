@@ -6,7 +6,7 @@ import type { ScreenPageContainerProps } from './ScreenPageContainer'
 
 const ScreenPageTitle = ({ children, className }: ScreenPageContainerProps) => {
   return (
-    <Text className={cn('text-center text-xl font-bold text-[#fff]', className)}>{children}</Text>
+    <Text className={cn('text-center text-xl font-bold text-white', className)}>{children}</Text>
   )
 }
 

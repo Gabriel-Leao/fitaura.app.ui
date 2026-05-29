@@ -3,6 +3,7 @@ import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'reac
 
 import { FOOD_UNIT_LABEL, FoodType as FoodTypeEnum } from '@/@types/diet'
 import { useDietContext } from '@/components/context/diet/useDietContext'
+import { COLORS } from '@/constants/colors'
 
 import { MacroPreview } from './MacroPreview'
 
@@ -81,7 +82,7 @@ export const AddFoodForm = ({ onBack, onSaved }: AddFoodFormProps) => {
         value={name}
         onChangeText={setName}
         placeholder='Ex: Pão francês'
-        placeholderTextColor='#666'
+        placeholderTextColor={COLORS.placeholder}
         className='mb-4 rounded-xl bg-white/10 px-4 py-3 text-white'
       />
 
@@ -91,7 +92,7 @@ export const AddFoodForm = ({ onBack, onSaved }: AddFoodFormProps) => {
           <TouchableOpacity
             key={type}
             onPress={() => handleTypeChange(type)}
-            className={`flex-1 items-center rounded-xl py-2 ${foodType === type ? 'bg-[#B872FF]' : 'bg-white/10'}`}>
+            className={`flex-1 items-center rounded-xl py-2 ${foodType === type ? 'bg-primary' : 'bg-white/10'}`}>
             <Text className='text-center text-xs text-white'>{label}</Text>
           </TouchableOpacity>
         ))}
@@ -103,7 +104,7 @@ export const AddFoodForm = ({ onBack, onSaved }: AddFoodFormProps) => {
           <TouchableOpacity
             key={b}
             onPress={() => setBase(b)}
-            className={`flex-1 items-center rounded-xl py-2 ${base === b ? 'bg-[#B872FF]' : 'bg-white/10'}`}>
+            className={`flex-1 items-center rounded-xl py-2 ${base === b ? 'bg-primary' : 'bg-white/10'}`}>
             <Text className='text-sm text-white'>
               {b}
               {unitLabel}
@@ -123,7 +124,7 @@ export const AddFoodForm = ({ onBack, onSaved }: AddFoodFormProps) => {
           <TextInput
             value={value}
             onChangeText={set}
-            placeholderTextColor='#666'
+            placeholderTextColor={COLORS.placeholder}
             keyboardType='numeric'
             className='mb-3 rounded-xl bg-white/10 px-4 py-3 text-white'
           />
@@ -138,7 +139,7 @@ export const AddFoodForm = ({ onBack, onSaved }: AddFoodFormProps) => {
 
       <TouchableOpacity
         onPress={handleSave}
-        className='mb-3 mt-2 items-center rounded-xl bg-[#B872FF] py-3'>
+        className='mb-3 mt-2 items-center rounded-xl bg-primary py-3'>
         <Text className='font-bold text-white'>Salvar alimento</Text>
       </TouchableOpacity>
       <TouchableOpacity

@@ -110,8 +110,7 @@ const CustomPicker = <T extends FieldValues>({
               </View>
             )}
 
-            <Text
-              className={cn('min-h-[16px] self-stretch px-2 text-red-600', !error && 'opacity-0')}>
+            <Text className={cn('min-h-4 self-stretch px-2 text-red-600', !error && 'opacity-0')}>
               {error?.message || 'Erro'}
             </Text>
           </View>

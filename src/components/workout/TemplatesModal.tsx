@@ -5,6 +5,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
 import { type ExerciseEntryInput, type WorkoutTemplate } from '@/@types/workout'
 import { useWorkoutContext } from '@/components/context/workout/useWorkoutContext'
+import { COLORS } from '@/constants/colors'
 
 import { ExerciseEntryItem } from './ExerciseEntryItem'
 import { ExercisePicker } from './ExercisePicker'
@@ -109,7 +110,7 @@ export const TemplatesModal = ({ visible, onClose }: TemplatesModalProps) => {
       animationType='slide'
       transparent>
       <View className='flex-1 justify-end bg-black/60'>
-        <View className='max-h-[92%] rounded-t-3xl bg-[#021123] p-6'>
+        <View className='max-h-[92%] rounded-t-3xl bg-background p-6'>
           <View className='mb-4 flex-row items-center justify-between'>
             <View className='flex-row items-center gap-3'>
               {view === 'editing' && (
@@ -160,14 +161,14 @@ export const TemplatesModal = ({ visible, onClose }: TemplatesModalProps) => {
                         <FontAwesome5
                           name='edit'
                           size={14}
-                          color='#B872FF'
+                          color={COLORS.primary}
                         />
                       </TouchableOpacity>
                       <TouchableOpacity onPress={() => handleDelete(t)}>
                         <FontAwesome5
                           name='trash-alt'
                           size={14}
-                          color='#ef4444'
+                          color={COLORS.danger}
                         />
                       </TouchableOpacity>
                     </View>
@@ -176,13 +177,13 @@ export const TemplatesModal = ({ visible, onClose }: TemplatesModalProps) => {
               )}
               <TouchableOpacity
                 onPress={openNew}
-                className='mt-3 flex-row items-center justify-center gap-2 rounded-xl border border-[#B872FF]/40 py-3'>
+                className='mt-3 flex-row items-center justify-center gap-2 rounded-xl border border-primary/40 py-3'>
                 <FontAwesome5
                   name='plus'
                   size={14}
-                  color='#B872FF'
+                  color={COLORS.primary}
                 />
-                <Text className='text-sm text-[#B872FF]'>Novo template</Text>
+                <Text className='text-sm text-primary'>Novo template</Text>
               </TouchableOpacity>
             </ScrollView>
           ) : (
@@ -224,13 +225,13 @@ export const TemplatesModal = ({ visible, onClose }: TemplatesModalProps) => {
                     <FontAwesome5
                       name='plus-circle'
                       size={14}
-                      color='#B872FF'
+                      color={COLORS.primary}
                     />
-                    <Text className='text-sm text-[#B872FF]'>Adicionar exercício</Text>
+                    <Text className='text-sm text-primary'>Adicionar exercício</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleSave}
-                    className='items-center rounded-xl bg-[#B872FF] py-3'>
+                    className='items-center rounded-xl bg-primary py-3'>
                     <Text className='font-bold text-white'>Salvar template</Text>
                   </TouchableOpacity>
                 </>

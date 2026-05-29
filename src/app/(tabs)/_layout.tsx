@@ -2,6 +2,7 @@ import { Redirect, Tabs } from 'expo-router'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
 import { useUserContext } from '@/components/context/user/useUserContext'
+import { COLORS } from '@/constants/colors'
 import { ROUTES } from '@/constants/routes'
 
 export default function TabsLayout() {
@@ -16,11 +17,11 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#021123',
+          backgroundColor: COLORS.background,
           borderColor: 'transparent',
         },
-        tabBarActiveTintColor: '#B872FF',
-        tabBarInactiveTintColor: '#FFFFFF',
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.white,
       }}>
       <Tabs.Screen
         name={ROUTES.HOME.NAME}

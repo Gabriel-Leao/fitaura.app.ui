@@ -11,6 +11,7 @@ import CustomInput from '@/components/CustomInput'
 import FormWrapper from '@/components/FormWrapper'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import ScreenPageTitle from '@/components/ScreenPageTitle'
+import { COLORS } from '@/constants/colors'
 import { ROUTES } from '@/constants/routes'
 import { VALIDATIONS } from '@/constants/validations'
 
@@ -64,7 +65,7 @@ const SignIn = () => {
           {isSubmitting ? (
             <ActivityIndicator
               size='large'
-              color='#B872FF'
+              color={COLORS.primary}
             />
           ) : (
             <CustomButton
@@ -78,7 +79,7 @@ const SignIn = () => {
 
       <Link
         href={ROUTES.SIGN_UP.ROUTE}
-        className='pt-12 text-center text-[#fff]'>
+        className='pt-12 text-center text-white'>
         Não tem conta? cadastra-se
       </Link>
     </ScreenPageContainer>

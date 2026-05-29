@@ -8,6 +8,7 @@ import {
   type ExerciseEntryInput,
   ExerciseType,
 } from '@/@types/workout'
+import { COLORS } from '@/constants/colors'
 
 type FieldProps = {
   label: string
@@ -123,7 +124,7 @@ export const ExerciseEntryItem = ({
             <FontAwesome5
               name='trash-alt'
               size={12}
-              color='#ef4444'
+              color={COLORS.danger}
             />
           </TouchableOpacity>
         </View>

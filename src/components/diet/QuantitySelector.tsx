@@ -31,7 +31,7 @@ export const QuantitySelector = ({ foodType, quantity, onChange }: QuantitySelec
           <TouchableOpacity
             key={amt}
             onPress={() => onChange(String(amt))}
-            className={`flex-1 items-center rounded-xl py-2 ${quantity === String(amt) ? 'bg-[#B872FF]' : 'bg-white/10'}`}>
+            className={`flex-1 items-center rounded-xl py-2 ${quantity === String(amt) ? 'bg-primary' : 'bg-white/10'}`}>
             <Text className='text-sm text-white'>{amt}</Text>
           </TouchableOpacity>
         ))}

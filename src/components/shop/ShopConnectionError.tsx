@@ -2,6 +2,8 @@ import { Text, TouchableOpacity, View } from 'react-native'
 
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
+import { COLORS } from '@/constants/colors'
+
 type ShopConnectionErrorProps = {
   message: string
   onRetry: () => void
@@ -12,7 +14,7 @@ export const ShopConnectionError = ({ message, onRetry }: ShopConnectionErrorPro
     <FontAwesome5
       name='exclamation-circle'
       size={14}
-      color='#f87171'
+      color={COLORS.dangerLight}
     />
     <Text className='flex-1 text-xs text-red-300'>{message}</Text>
     <TouchableOpacity onPress={onRetry}>

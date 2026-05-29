@@ -10,7 +10,9 @@ export type ScreenPageContainerProps = {
 
 const ScreenPageContainer = ({ children, className }: ScreenPageContainerProps) => {
   return (
-    <View className={cn('min-h-screen flex-1 bg-[#021123] px-4 py-10', className)}>{children}</View>
+    <View className={cn('min-h-screen flex-1 bg-background px-4 py-10', className)}>
+      {children}
+    </View>
   )
 }
 

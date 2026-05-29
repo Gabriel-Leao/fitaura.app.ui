@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useRef, useState } from 'react'
+import { createContext, startTransition, useCallback, useEffect, useRef, useState } from 'react'
 import { Alert } from 'react-native'
 
 import Constants from 'expo-constants'
@@ -94,7 +94,7 @@ export const ShopProvider = ({ children }: React.PropsWithChildren) => {
         initial[item.id] = Math.floor(Math.random() * 10) + 2
       }),
     )
-    setStockMap(initial)
+    startTransition(() => setStockMap(initial))
 
     const sendIoT = () => {
       setIotReading({

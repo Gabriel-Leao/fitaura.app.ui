@@ -12,7 +12,7 @@ export const FoodListItem = ({ food, selected, onPress }: FoodListItemProps) => 
   <TouchableOpacity
     onPress={onPress}
     className={`mb-1 flex-row items-center justify-between rounded-xl px-4 py-3 ${
-      selected ? 'border border-[#B872FF] bg-[#B872FF]/30' : 'bg-white/10'
+      selected ? 'border-primary bg-primary/30 border' : 'bg-white/10'
     }`}>
     <Text className='text-white'>{food.name}</Text>
     <Text className='text-xs text-gray-400'>

@@ -6,6 +6,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 import { type ExerciseEntryInput, type WorkoutLog, type WorkoutTemplate } from '@/@types/workout'
 import { useUserContext } from '@/components/context/user/useUserContext'
 import { useWorkoutContext } from '@/components/context/workout/useWorkoutContext'
+import { COLORS } from '@/constants/colors'
 import { SUGGESTED_TEMPLATES } from '@/constants/workout'
 
 import { ExerciseEntryItem } from './ExerciseEntryItem'
@@ -157,7 +158,7 @@ export const LogWorkoutModal = ({ visible, date, onClose, editLog }: LogWorkoutM
       animationType='slide'
       transparent>
       <View className='flex-1 justify-end bg-black/60'>
-        <View className='max-h-[92%] rounded-t-3xl bg-[#021123] p-6'>
+        <View className='max-h-[92%] rounded-t-3xl bg-background p-6'>
           <View className='mb-4 flex-row items-center justify-between'>
             <View className='flex-row items-center gap-3'>
               {step === 'review' && !isEditMode && (
@@ -193,7 +194,7 @@ export const LogWorkoutModal = ({ visible, date, onClose, editLog }: LogWorkoutM
                   <TouchableOpacity
                     key={tab}
                     onPress={() => setActiveTab(tab)}
-                    className={`flex-1 items-center rounded-xl py-2 ${activeTab === tab ? 'bg-[#B872FF]' : 'bg-white/10'}`}>
+                    className={`flex-1 items-center rounded-xl py-2 ${activeTab === tab ? 'bg-primary' : 'bg-white/10'}`}>
                     <Text className='text-sm text-white'>
                       {tab === 'suggested' ? 'Sugerido' : 'Meus templates'}
                     </Text>
@@ -229,13 +230,13 @@ export const LogWorkoutModal = ({ visible, date, onClose, editLog }: LogWorkoutM
 
               <TouchableOpacity
                 onPress={handleFromScratch}
-                className='mt-3 flex-row items-center justify-center gap-2 rounded-xl border border-[#B872FF]/40 py-3'>
+                className='mt-3 flex-row items-center justify-center gap-2 rounded-xl border border-primary/40 py-3'>
                 <FontAwesome5
                   name='plus'
                   size={14}
-                  color='#B872FF'
+                  color={COLORS.primary}
                 />
-                <Text className='text-sm text-[#B872FF]'>Começar do zero</Text>
+                <Text className='text-sm text-primary'>Começar do zero</Text>
               </TouchableOpacity>
             </ScrollView>
           ) : (
@@ -276,9 +277,9 @@ export const LogWorkoutModal = ({ visible, date, onClose, editLog }: LogWorkoutM
                     <FontAwesome5
                       name='plus-circle'
                       size={14}
-                      color='#B872FF'
+                      color={COLORS.primary}
                     />
-                    <Text className='text-sm text-[#B872FF]'>Adicionar exercício</Text>
+                    <Text className='text-sm text-primary'>Adicionar exercício</Text>
                   </TouchableOpacity>
 
                   {!isEditMode && (
@@ -286,7 +287,7 @@ export const LogWorkoutModal = ({ visible, date, onClose, editLog }: LogWorkoutM
                       onPress={() => setSaveAsTemplate(!saveAsTemplate)}
                       className='mb-4 flex-row items-center gap-3 rounded-xl bg-white/5 px-4 py-3'>
                       <View
-                        className={`h-5 w-5 items-center justify-center rounded ${saveAsTemplate ? 'bg-[#B872FF]' : 'border border-gray-500'}`}>
+                        className={`h-5 w-5 items-center justify-center rounded ${saveAsTemplate ? 'bg-primary' : 'border border-gray-500'}`}>
                         {saveAsTemplate && (
                           <FontAwesome5
                             name='check'
@@ -301,7 +302,7 @@ export const LogWorkoutModal = ({ visible, date, onClose, editLog }: LogWorkoutM
 
                   <TouchableOpacity
                     onPress={handleConfirm}
-                    className='items-center rounded-xl bg-[#B872FF] py-3'>
+                    className='items-center rounded-xl bg-primary py-3'>
                     <Text className='font-bold text-white'>
                       {isEditMode ? 'Salvar alterações' : 'Confirmar treino'}
                     </Text>

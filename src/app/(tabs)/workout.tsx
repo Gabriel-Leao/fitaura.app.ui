@@ -9,9 +9,15 @@ import { useWorkoutContext } from '@/components/context/workout/useWorkoutContex
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import { LogWorkoutModal } from '@/components/workout/LogWorkoutModal'
 import { TemplatesModal } from '@/components/workout/TemplatesModal'
+import { COLORS } from '@/constants/colors'
 import { formatWeekRange } from '@/lib/utils/workout'
 
-const toDateString = (date: Date): string => date.toISOString().split('T')[0]
+const toDateString = (date: Date): string => {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
 
 const formatDate = (dateStr: string): string => {
   const [year, month, day] = dateStr.split('-').map(Number)
@@ -61,7 +67,7 @@ export default function Workout() {
         showsVerticalScrollIndicator={false}>
         <Text className='mb-6 text-center text-2xl font-bold text-white'>Seus treinos</Text>
 
-        <View className='mb-6 rounded-2xl border border-[#B872FF]/40 bg-[#B872FF]/20 p-4'>
+        <View className='mb-6 rounded-2xl border border-primary/40 bg-primary/20 p-4'>
           <Text className='mb-1 text-center text-xs text-gray-400'>Semana {weekRange}</Text>
           <Text className='text-center text-3xl font-bold text-white'>
             {weeklyStats.totalWorkouts}{' '}
@@ -116,7 +122,7 @@ export default function Workout() {
             <FontAwesome5
               name='chevron-right'
               size={16}
-              color={isToday ? '#444' : 'white'}
+              color={isToday ? COLORS.grayDark : 'white'}
             />
           </TouchableOpacity>
         </View>
@@ -124,7 +130,7 @@ export default function Workout() {
         <View className='mb-4 flex-row gap-3'>
           <TouchableOpacity
             onPress={() => setShowLogModal(true)}
-            className='flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-[#B872FF] py-3'>
+            className='flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-primary py-3'>
             <FontAwesome5
               name='plus'
               size={14}
@@ -138,9 +144,9 @@ export default function Workout() {
             <FontAwesome5
               name='list'
               size={14}
-              color='#B872FF'
+              color={COLORS.primary}
             />
-            <Text className='text-sm text-[#B872FF]'>Templates</Text>
+            <Text className='text-sm text-primary'>Templates</Text>
           </TouchableOpacity>
         </View>
 
@@ -149,7 +155,7 @@ export default function Workout() {
             <FontAwesome5
               name='dumbbell'
               size={32}
-              color='#444'
+              color={COLORS.grayDark}
             />
             <Text className='mt-3 text-center text-gray-500'>
               Nenhum treino registrado {isToday ? 'hoje' : 'neste dia'}.
@@ -179,7 +185,7 @@ export default function Workout() {
                       <FontAwesome5
                         name='edit'
                         size={13}
-                        color='#B872FF'
+                        color={COLORS.primary}
                       />
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -188,7 +194,7 @@ export default function Workout() {
                       <FontAwesome5
                         name='trash-alt'
                         size={12}
-                        color='#ef4444'
+                        color={COLORS.danger}
                       />
                     </TouchableOpacity>
                     <FontAwesome5

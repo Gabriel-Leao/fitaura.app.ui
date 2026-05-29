@@ -40,13 +40,12 @@ const CustomInput = <T extends FieldValues>({
             onBlur={onBlur}
             secureTextEntry={secureTextEntry ?? false}
             className={cn(
-              'rounded-xl border-2 bg-[#fff] px-6 py-3 text-[#144480]',
+              'border-2 bg-white px-6 py-3 text-navy',
               error ? 'border-red-600' : 'border-transparent',
               inputClassname,
             )}
           />
-          <Text
-            className={cn('min-h-[16px] self-stretch px-2 text-red-600', !error && 'opacity-0')}>
+          <Text className={cn('min-h-4 self-stretch px-2 text-red-600', !error && 'opacity-0')}>
             {error?.message || 'Erro'}
           </Text>
         </View>

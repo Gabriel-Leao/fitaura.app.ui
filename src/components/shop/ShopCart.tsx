@@ -3,6 +3,7 @@ import { Alert, Text, TouchableOpacity, View } from 'react-native'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
 import { useShopContext } from '@/components/context/shop/useShopContext'
+import { COLORS } from '@/constants/colors'
 
 type ShopCartProps = {
   onClose: () => void
@@ -37,7 +38,7 @@ export const ShopCart = ({ onClose }: ShopCartProps) => {
           <FontAwesome5
             name='shopping-basket'
             size={28}
-            color='rgba(255,255,255,0.25)'
+            color={COLORS.whiteFaint}
           />
           <Text className='text-sm text-white/40'>Carrinho vazio</Text>
         </View>
@@ -57,7 +58,7 @@ export const ShopCart = ({ onClose }: ShopCartProps) => {
                   <FontAwesome5
                     name='minus-circle'
                     size={16}
-                    color='#f87171'
+                    color={COLORS.dangerLight}
                   />
                 </TouchableOpacity>
                 <Text className='w-5 text-center text-xs font-bold text-white'>
@@ -67,7 +68,7 @@ export const ShopCart = ({ onClose }: ShopCartProps) => {
                   <FontAwesome5
                     name='plus-circle'
                     size={16}
-                    color='#a78bfa'
+                    color={COLORS.infoLight}
                   />
                 </TouchableOpacity>
               </View>

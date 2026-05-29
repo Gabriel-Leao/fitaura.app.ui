@@ -3,6 +3,7 @@ import { Text, View } from 'react-native'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
 import type { IoTReading } from '@/@types/shop'
+import { COLORS } from '@/constants/colors'
 
 type IotSensorBannerProps = {
   reading: IoTReading
@@ -13,7 +14,7 @@ export const IotSensorBanner = ({ reading }: IotSensorBannerProps) => (
     <FontAwesome5
       name='microchip'
       size={14}
-      color='#60a5fa'
+      color={COLORS.info}
     />
     <View className='flex-1'>
       <Text className='text-[11px] font-semibold uppercase tracking-wider text-blue-400'>

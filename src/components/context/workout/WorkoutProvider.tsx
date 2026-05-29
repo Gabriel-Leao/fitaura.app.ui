@@ -1,8 +1,6 @@
-import { createContext, useCallback, useEffect, useState } from 'react'
+import { createContext, useCallback, useEffect, useRef, useState } from 'react'
 
 import * as Crypto from 'expo-crypto'
-
-import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import {
   type Exercise,
@@ -14,17 +12,22 @@ import {
   type WorkoutTemplate,
 } from '@/@types/workout'
 import {
+  API_EXERCISES_KEY,
   CUSTOM_EXERCISES_KEY,
   CUSTOM_TEMPLATES_KEY,
   DEFAULT_EXERCISES,
   WORKOUT_LOGS_KEY,
 } from '@/constants/workout'
 import { calculateExerciseCalories, getWeekRange } from '@/lib/utils/workout'
+import { fetchExercises } from '@/services/api'
+import { storageGet, storageSet } from '@/services/storage'
 
 type WorkoutContextType = {
   customTemplates: WorkoutTemplate[]
   customExercises: Exercise[]
   allExercises: Exercise[]
+  apiLoading: boolean
+  apiError: boolean
   getDayLogs: (date: string) => WorkoutLog[]
   getWeeklyStats: (date: string) => WeeklyStats
   logWorkout: (
@@ -77,38 +80,49 @@ export const WorkoutProvider = ({ children, userId }: WorkoutProviderProps) => {
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([])
   const [customTemplates, setCustomTemplates] = useState<WorkoutTemplate[]>([])
   const [customExercises, setCustomExercises] = useState<Exercise[]>([])
+  const [apiExercises, setApiExercises] = useState<Exercise[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [apiLoading, setApiLoading] = useState(false)
+  const [apiError, setApiError] = useState(false)
+
+  const initialized = useRef(false)
 
   const logsKey = userId ? `${WORKOUT_LOGS_KEY}:${userId}` : null
   const templatesKey = userId ? `${CUSTOM_TEMPLATES_KEY}:${userId}` : null
   const exercisesKey = userId ? `${CUSTOM_EXERCISES_KEY}:${userId}` : null
 
-  const allExercises = [...DEFAULT_EXERCISES, ...customExercises]
+  const allExercises = [
+    ...DEFAULT_EXERCISES,
+    ...apiExercises.filter((a) => !DEFAULT_EXERCISES.some((d) => d.name === a.name)),
+    ...customExercises,
+  ]
 
   useEffect(() => {
-    setIsLoading(true)
-    setWorkoutLogs([])
-    setCustomTemplates([])
-    setCustomExercises([])
-
-    if (!logsKey || !templatesKey || !exercisesKey) {
-      setIsLoading(false)
-      return
-    }
-
     const load = async () => {
+      initialized.current = false
+      setIsLoading(true)
+      setWorkoutLogs([])
+      setCustomTemplates([])
+      setCustomExercises([])
+
+      if (!logsKey || !templatesKey || !exercisesKey) {
+        setIsLoading(false)
+        return
+      }
+
       try {
-        const [logsJson, templatesJson, exercisesJson] = await Promise.all([
-          AsyncStorage.getItem(logsKey),
-          AsyncStorage.getItem(templatesKey),
-          AsyncStorage.getItem(exercisesKey),
+        const [logs, templates, exercises] = await Promise.all([
+          storageGet<WorkoutLog[]>(logsKey),
+          storageGet<WorkoutTemplate[]>(templatesKey),
+          storageGet<Exercise[]>(exercisesKey),
         ])
-        if (logsJson) setWorkoutLogs(JSON.parse(logsJson))
-        if (templatesJson) setCustomTemplates(JSON.parse(templatesJson))
-        if (exercisesJson) setCustomExercises(JSON.parse(exercisesJson))
+        if (logs) setWorkoutLogs(logs)
+        if (templates) setCustomTemplates(templates)
+        if (exercises) setCustomExercises(exercises)
       } catch (e) {
         console.error('Erro ao carregar treinos:', e)
       } finally {
+        initialized.current = true
         setIsLoading(false)
       }
     }
@@ -117,18 +131,43 @@ export const WorkoutProvider = ({ children, userId }: WorkoutProviderProps) => {
   }, [logsKey, templatesKey, exercisesKey])
 
   useEffect(() => {
-    if (!isLoading && logsKey) AsyncStorage.setItem(logsKey, JSON.stringify(workoutLogs))
-  }, [workoutLogs, isLoading, logsKey])
+    const loadExercises = async () => {
+      setApiLoading(true)
+      setApiError(false)
+
+      const cached = await storageGet<Exercise[]>(API_EXERCISES_KEY)
+      if (cached && cached.length > 0) setApiExercises(cached)
+
+      try {
+        const fresh = await fetchExercises()
+        if (fresh.length > 0) {
+          setApiExercises(fresh)
+          storageSet(API_EXERCISES_KEY, fresh)
+        }
+      } catch {
+        setApiError(true)
+      } finally {
+        setApiLoading(false)
+      }
+    }
+
+    loadExercises()
+  }, [])
 
   useEffect(() => {
-    if (!isLoading && templatesKey)
-      AsyncStorage.setItem(templatesKey, JSON.stringify(customTemplates))
-  }, [customTemplates, isLoading, templatesKey])
+    if (!initialized.current || !logsKey) return
+    storageSet(logsKey, workoutLogs)
+  }, [workoutLogs, logsKey])
 
   useEffect(() => {
-    if (!isLoading && exercisesKey)
-      AsyncStorage.setItem(exercisesKey, JSON.stringify(customExercises))
-  }, [customExercises, isLoading, exercisesKey])
+    if (!initialized.current || !templatesKey) return
+    storageSet(templatesKey, customTemplates)
+  }, [customTemplates, templatesKey])
+
+  useEffect(() => {
+    if (!initialized.current || !exercisesKey) return
+    storageSet(exercisesKey, customExercises)
+  }, [customExercises, exercisesKey])
 
   const getDayLogs = useCallback(
     (date: string) => workoutLogs.filter((l) => l.date === date),
@@ -235,6 +274,8 @@ export const WorkoutProvider = ({ children, userId }: WorkoutProviderProps) => {
         customTemplates,
         customExercises,
         allExercises,
+        apiLoading,
+        apiError,
         getDayLogs,
         getWeeklyStats,
         logWorkout,

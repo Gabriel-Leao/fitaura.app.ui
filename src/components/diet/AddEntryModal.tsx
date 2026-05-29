@@ -5,6 +5,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
 import { type Food, FOOD_QUICK_AMOUNTS, MEAL_LABELS, type MealId } from '@/@types/diet'
 import { useDietContext } from '@/components/context/diet/useDietContext'
+import { COLORS } from '@/constants/colors'
 
 import { AddFoodForm } from './AddFoodForm'
 import { FoodListItem } from './FoodListItem'
@@ -63,7 +64,7 @@ export const AddEntryModal = ({ visible, mealId, date, onClose }: AddEntryModalP
       animationType='slide'
       transparent>
       <View className='flex-1 justify-end bg-black/60'>
-        <View className='max-h-[90%] rounded-t-3xl bg-[#021123] p-6'>
+        <View className='max-h-9/10 rounded-t-3xl bg-background p-6'>
           <View className='mb-4 flex-row items-center justify-between'>
             <Text className='text-lg font-bold text-white'>
               {showAddFood ? 'Novo alimento' : `Adicionar em ${MEAL_LABELS[mealId]}`}
@@ -91,7 +92,7 @@ export const AddEntryModal = ({ visible, mealId, date, onClose }: AddEntryModalP
                 value={search}
                 onChangeText={setSearch}
                 placeholder='Buscar alimento...'
-                placeholderTextColor='#666'
+                placeholderTextColor={COLORS.placeholder}
                 className='mb-3 rounded-xl bg-white/10 px-4 py-3 text-white'
               />
 
@@ -117,9 +118,9 @@ export const AddEntryModal = ({ visible, mealId, date, onClose }: AddEntryModalP
                 <FontAwesome5
                   name='plus-circle'
                   size={14}
-                  color='#B872FF'
+                  color={COLORS.primary}
                 />
-                <Text className='text-sm text-[#B872FF]'>Cadastrar novo alimento</Text>
+                <Text className='text-sm text-primary'>Cadastrar novo alimento</Text>
               </TouchableOpacity>
 
               {selectedFood && (
@@ -134,7 +135,7 @@ export const AddEntryModal = ({ visible, mealId, date, onClose }: AddEntryModalP
 
                   <TouchableOpacity
                     onPress={handleAdd}
-                    className='items-center rounded-xl bg-[#B872FF] py-3'>
+                    className='items-center rounded-xl bg-primary py-3'>
                     <Text className='font-bold text-white'>Adicionar</Text>
                   </TouchableOpacity>
                 </View>

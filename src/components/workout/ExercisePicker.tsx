@@ -12,6 +12,7 @@ import {
   MuscleGroup,
 } from '@/@types/workout'
 import { useWorkoutContext } from '@/components/context/workout/useWorkoutContext'
+import { COLORS } from '@/constants/colors'
 
 type ExercisePickerProps = {
   onSelect: (entry: ExerciseEntryInput) => void
@@ -80,7 +81,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
             value={newName}
             onChangeText={setNewName}
             placeholder='Ex: Rosca inversa'
-            placeholderTextColor='#666'
+            placeholderTextColor={COLORS.placeholder}
             className='rounded-xl bg-white/10 px-4 py-3 text-white'
           />
           <Text className='text-sm text-gray-400'>Tipo</Text>
@@ -89,7 +90,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
               <TouchableOpacity
                 key={t}
                 onPress={() => setNewType(t)}
-                className={`flex-1 items-center rounded-xl py-2 ${newType === t ? 'bg-[#B872FF]' : 'bg-white/10'}`}>
+                className={`flex-1 items-center rounded-xl py-2 ${newType === t ? 'bg-primary' : 'bg-white/10'}`}>
                 <Text className='text-xs text-white'>{EXERCISE_TYPE_LABELS[t]}</Text>
               </TouchableOpacity>
             ))}
@@ -100,14 +101,14 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
               <TouchableOpacity
                 key={m}
                 onPress={() => setNewMuscle(m)}
-                className={`rounded-xl px-3 py-1.5 ${newMuscle === m ? 'bg-[#B872FF]' : 'bg-white/10'}`}>
+                className={`rounded-xl px-3 py-1.5 ${newMuscle === m ? 'bg-primary' : 'bg-white/10'}`}>
                 <Text className='text-xs text-white'>{m}</Text>
               </TouchableOpacity>
             ))}
           </View>
           <TouchableOpacity
             onPress={handleSaveNew}
-            className='mt-2 items-center rounded-xl bg-[#B872FF] py-3'>
+            className='mt-2 items-center rounded-xl bg-primary py-3'>
             <Text className='font-bold text-white'>Salvar exercício</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -122,7 +123,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
             value={search}
             onChangeText={setSearch}
             placeholder='Buscar exercício...'
-            placeholderTextColor='#666'
+            placeholderTextColor={COLORS.placeholder}
             className='mb-3 rounded-xl bg-white/10 px-4 py-3 text-white'
           />
           <View className='mb-3 flex-row gap-2'>
@@ -130,7 +131,7 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
               <TouchableOpacity
                 key={label}
                 onPress={() => setTypeFilter(value)}
-                className={`flex-1 items-center rounded-xl py-1.5 ${typeFilter === value ? 'bg-[#B872FF]' : 'bg-white/10'}`}>
+                className={`flex-1 items-center rounded-xl py-1.5 ${typeFilter === value ? 'bg-primary' : 'bg-white/10'}`}>
                 <Text className='text-xs text-white'>{label}</Text>
               </TouchableOpacity>
             ))}
@@ -168,9 +169,9 @@ export const ExercisePicker = ({ onSelect, onClose }: ExercisePickerProps) => {
             <FontAwesome5
               name='plus-circle'
               size={14}
-              color='#B872FF'
+              color={COLORS.primary}
             />
-            <Text className='text-sm text-[#B872FF]'>Cadastrar novo exercício</Text>
+            <Text className='text-sm text-primary'>Cadastrar novo exercício</Text>
           </TouchableOpacity>
         </>
       )}

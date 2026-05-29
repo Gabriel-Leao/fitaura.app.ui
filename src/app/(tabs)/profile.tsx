@@ -25,6 +25,7 @@ import CustomInput from '@/components/CustomInput'
 import CustomPicker from '@/components/CustomPicker'
 import FormWrapper from '@/components/FormWrapper'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
+import { COLORS } from '@/constants/colors'
 import { ACTIVITY_LEVEL_OPTIONS, GOAL_OPTIONS, SEX_OPTIONS } from '@/constants/pickerOptions'
 import { ROUTES } from '@/constants/routes'
 import { VALIDATIONS } from '@/constants/validations'
@@ -240,7 +241,7 @@ const Profile = () => {
               </View>
             )}
 
-            <View className='absolute bottom-0 right-0 rounded-full bg-[#B872FF] p-2'>
+            <View className='absolute bottom-0 right-0 rounded-full bg-primary p-2'>
               {isUploading ? (
                 <ActivityIndicator
                   size={16}
@@ -271,10 +272,10 @@ const Profile = () => {
               <FontAwesome5
                 name='edit'
                 size={14}
-                color='#B872FF'
+                color={COLORS.primary}
               />
 
-              <Text className='text-sm text-[#B872FF]'>Editar perfil</Text>
+              <Text className='text-sm text-primary'>Editar perfil</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -357,14 +358,14 @@ const Profile = () => {
               {isSubmitting ? (
                 <ActivityIndicator
                   size='large'
-                  color='#B872FF'
+                  color={COLORS.primary}
                 />
               ) : (
                 <View className='w-4/5 gap-3'>
                   <TouchableOpacity
                     onPress={handleSubmit(onSavePressed)}
                     disabled={!isValid}
-                    className='items-center rounded-xl bg-[#B872FF] py-3 disabled:opacity-50'>
+                    className='items-center rounded-xl bg-primary py-3 disabled:opacity-50'>
                     <Text className='font-bold text-white'>Salvar alterações</Text>
                   </TouchableOpacity>
 
@@ -395,7 +396,7 @@ const Profile = () => {
           <View className='gap-4 px-4 py-8'>
             <TouchableOpacity
               onPress={onLogoutPressed}
-              className='flex-row items-center justify-center gap-2 rounded-xl bg-[#98A0A8] py-3'>
+              className='flex-row items-center justify-center gap-2 rounded-xl bg-muted py-3'>
               <FontAwesome5
                 name='sign-out-alt'
                 size={20}

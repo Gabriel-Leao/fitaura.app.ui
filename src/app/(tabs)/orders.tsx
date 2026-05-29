@@ -7,6 +7,7 @@ import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from '@/@types/shop'
 import { ShopProvider } from '@/components/context/shop/ShopProvider'
 import { useShopContext } from '@/components/context/shop/useShopContext'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
+import { COLORS } from '@/constants/colors'
 import { ROUTES } from '@/constants/routes'
 
 const OrdersContent = () => {
@@ -33,7 +34,7 @@ const OrdersContent = () => {
             <FontAwesome5
               name='box-open'
               size={36}
-              color='#444'
+              color={COLORS.grayDark}
             />
             <Text className='mt-4 text-center text-gray-500'>Nenhum pedido realizado ainda.</Text>
           </View>

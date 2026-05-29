@@ -9,9 +9,15 @@ import { useDietContext } from '@/components/context/diet/useDietContext'
 import { useUserContext } from '@/components/context/user/useUserContext'
 import { AddEntryModal } from '@/components/diet/AddEntryModal'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
+import { COLORS } from '@/constants/colors'
 import { calculateNutritionGoal, getCalorieStatus } from '@/lib/utils/nutrition'
 
-const toDateString = (date: Date): string => date.toISOString().split('T')[0]
+const toDateString = (date: Date): string => {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
 
 const formatDate = (dateStr: string): string => {
   const [year, month, day] = dateStr.split('-').map(Number)
@@ -54,17 +60,17 @@ const Index = () => {
   const statusConfig = {
     on_track: {
       icon: 'check-circle' as const,
-      color: '#22c55e',
+      color: COLORS.success,
       message: 'No caminho certo',
     },
     below: {
       icon: 'arrow-circle-down' as const,
-      color: '#facc15',
+      color: COLORS.warning,
       message: 'Você ainda pode comer mais',
     },
     above: {
       icon: 'exclamation-circle' as const,
-      color: '#ef4444',
+      color: COLORS.danger,
       message: 'Meta ultrapassada',
     },
   }
@@ -116,12 +122,12 @@ const Index = () => {
             <FontAwesome5
               name='chevron-right'
               size={16}
-              color={isToday ? '#444' : 'white'}
+              color={isToday ? COLORS.grayDark : 'white'}
             />
           </TouchableOpacity>
         </View>
 
-        <View className='mb-6 rounded-2xl border border-[#B872FF]/40 bg-[#B872FF]/20 p-4'>
+        <View className='mb-6 rounded-2xl border border-primary/40 bg-primary/20 p-4'>
           <Text className='mb-1 text-center text-sm text-gray-400'>Total consumido</Text>
           <Text className='text-center text-3xl font-bold text-white'>{totalCalories} kcal</Text>
 
@@ -222,7 +228,7 @@ const Index = () => {
                           <FontAwesome5
                             name='trash-alt'
                             size={12}
-                            color='#ef4444'
+                            color={COLORS.danger}
                           />
                         </TouchableOpacity>
                       </View>
@@ -235,9 +241,9 @@ const Index = () => {
                     <FontAwesome5
                       name='plus-circle'
                       size={14}
-                      color='#B872FF'
+                      color={COLORS.primary}
                     />
-                    <Text className='text-sm text-[#B872FF]'>Adicionar alimento</Text>
+                    <Text className='text-sm text-primary'>Adicionar alimento</Text>
                   </TouchableOpacity>
                 </View>
               )}

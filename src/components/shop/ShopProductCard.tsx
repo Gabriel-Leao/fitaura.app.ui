@@ -3,6 +3,7 @@ import { ActivityIndicator, Dimensions, Image, Text, TouchableOpacity, View } fr
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
 import type { CartItem, StockLevel } from '@/@types/shop'
+import { COLORS } from '@/constants/colors'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const CARD_WIDTH = Math.floor((SCREEN_WIDTH - 48) / 3)
@@ -73,7 +74,7 @@ export const ShopProductCard = ({
             (isAdding ? (
               <ActivityIndicator
                 size='small'
-                color='#B872FF'
+                color={COLORS.primary}
               />
             ) : inCart ? (
               <View className='flex-row items-center gap-2'>
@@ -83,7 +84,7 @@ export const ShopProductCard = ({
                   <FontAwesome5
                     name='minus-circle'
                     size={13}
-                    color='#f87171'
+                    color={COLORS.dangerLight}
                   />
                 </TouchableOpacity>
                 <Text className='text-[10px] font-bold text-purple-400'>{inCart.quantity}</Text>
@@ -93,7 +94,7 @@ export const ShopProductCard = ({
                   <FontAwesome5
                     name='plus-circle'
                     size={13}
-                    color='#a78bfa'
+                    color={COLORS.infoLight}
                   />
                 </TouchableOpacity>
               </View>
@@ -104,7 +105,7 @@ export const ShopProductCard = ({
                 <FontAwesome5
                   name='cart-plus'
                   size={13}
-                  color='rgba(255,255,255,0.4)'
+                  color={COLORS.whiteMuted}
                 />
               </TouchableOpacity>
             ))}

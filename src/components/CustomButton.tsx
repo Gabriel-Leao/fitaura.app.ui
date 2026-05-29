@@ -9,10 +9,10 @@ type CustomButtonProps = {
 const CustomButton = ({ onPress, label, disabled = false }: CustomButtonProps) => {
   return (
     <TouchableOpacity
-      className='w-4/5 rounded-xl bg-[#B872FF] px-6 py-3 disabled:bg-[#B872FF60]'
+      className='w-4/5 rounded-xl bg-primary px-6 py-3 disabled:bg-primary-muted'
       onPress={onPress}
       disabled={disabled}>
-      <Text className='text-center font-bold text-[#fff] disabled:text-[#98A0A8]'>{label}</Text>
+      <Text className='text-center font-bold text-white disabled:text-muted'>{label}</Text>
     </TouchableOpacity>
   )
 }

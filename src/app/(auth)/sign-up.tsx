@@ -12,6 +12,7 @@ import CustomPicker from '@/components/CustomPicker'
 import FormWrapper from '@/components/FormWrapper'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import ScreenPageTitle from '@/components/ScreenPageTitle'
+import { COLORS } from '@/constants/colors'
 import { ACTIVITY_LEVEL_OPTIONS, GOAL_OPTIONS, SEX_OPTIONS } from '@/constants/pickerOptions'
 import { ROUTES } from '@/constants/routes'
 import { VALIDATIONS } from '@/constants/validations'
@@ -134,7 +135,7 @@ const SignUp = () => {
             {isSubmitting ? (
               <ActivityIndicator
                 size='large'
-                color='#B872FF'
+                color={COLORS.primary}
               />
             ) : (
               <CustomButton
@@ -148,7 +149,7 @@ const SignUp = () => {
 
         <Link
           href={ROUTES.SIGN_IN.ROUTE}
-          className='pt-12 text-center text-[#fff]'>
+          className='pt-12 text-center text-white'>
           Já tem conta? Faça login
         </Link>
       </ScrollView>

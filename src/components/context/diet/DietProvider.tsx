@@ -38,16 +38,16 @@ export const DietProvider = ({ children, userId }: DietProviderProps) => {
   const allFoods = [...DEFAULT_FOODS, ...customFoods]
 
   useEffect(() => {
-    setIsLoading(true)
-    setDietData([])
-    setCustomFoods([])
-
-    if (!dietKey || !customFoodsKey) {
-      setIsLoading(false)
-      return
-    }
-
     const load = async () => {
+      setIsLoading(true)
+      setDietData([])
+      setCustomFoods([])
+
+      if (!dietKey || !customFoodsKey) {
+        setIsLoading(false)
+        return
+      }
+
       try {
         const [dietJson, customJson] = await Promise.all([
           AsyncStorage.getItem(dietKey),
