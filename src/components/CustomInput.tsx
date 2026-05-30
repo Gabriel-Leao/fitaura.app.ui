@@ -40,7 +40,7 @@ const CustomInput = <T extends FieldValues>({
             onBlur={onBlur}
             secureTextEntry={secureTextEntry ?? false}
             className={cn(
-              'border-2 bg-white px-6 py-3 text-navy',
+              'rounded-xl border-2 bg-white px-6 py-3 text-navy',
               error ? 'border-red-600' : 'border-transparent',
               inputClassname,
             )}

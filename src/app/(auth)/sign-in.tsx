@@ -2,14 +2,12 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { ActivityIndicator, Alert, View } from 'react-native'
 
-import { Link } from 'expo-router'
-
 import type { SignInFormData } from '@/@types/forms'
+import AuthPageContainer from '@/components/AuthPageContainer'
 import { useUserContext } from '@/components/context/user/useUserContext'
 import CustomButton from '@/components/CustomButton'
 import CustomInput from '@/components/CustomInput'
 import FormWrapper from '@/components/FormWrapper'
-import ScreenPageContainer from '@/components/ScreenPageContainer'
 import ScreenPageTitle from '@/components/ScreenPageTitle'
 import { COLORS } from '@/constants/colors'
 import { ROUTES } from '@/constants/routes'
@@ -41,7 +39,9 @@ const SignIn = () => {
   }
 
   return (
-    <ScreenPageContainer className='justify-center gap-8'>
+    <AuthPageContainer
+      destination={ROUTES.SIGN_UP.ROUTE}
+      destinationLabel='Não tem conta? Cadastre-se'>
       <ScreenPageTitle>Login</ScreenPageTitle>
 
       <FormWrapper>
@@ -76,13 +76,7 @@ const SignIn = () => {
           )}
         </View>
       </FormWrapper>
-
-      <Link
-        href={ROUTES.SIGN_UP.ROUTE}
-        className='pt-12 text-center text-white'>
-        Não tem conta? cadastra-se
-      </Link>
-    </ScreenPageContainer>
+    </AuthPageContainer>
   )
 }
 

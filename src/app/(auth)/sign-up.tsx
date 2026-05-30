@@ -2,15 +2,17 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { ActivityIndicator, Alert, ScrollView, View } from 'react-native'
 
-import { Link, router } from 'expo-router'
+import { router } from 'expo-router'
 
 import type { SignUpFormData } from '@/@types/forms'
+import type { User } from '@/@types/user'
+import AuthPageContainer from '@/components/AuthPageContainer'
+import ConfirmModal from '@/components/ConfirmModal'
 import { useUserContext } from '@/components/context/user/useUserContext'
 import CustomButton from '@/components/CustomButton'
 import CustomInput from '@/components/CustomInput'
 import CustomPicker from '@/components/CustomPicker'
 import FormWrapper from '@/components/FormWrapper'
-import ScreenPageContainer from '@/components/ScreenPageContainer'
 import ScreenPageTitle from '@/components/ScreenPageTitle'
 import { COLORS } from '@/constants/colors'
 import { ACTIVITY_LEVEL_OPTIONS, GOAL_OPTIONS, SEX_OPTIONS } from '@/constants/pickerOptions'
@@ -27,15 +29,18 @@ const SignUp = () => {
     reValidateMode: 'onChange',
   })
 
-  const { register, users } = useUserContext()
+  const { register, loginDirectly, users } = useUserContext()
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [showSuccess, setShowSuccess] = useState<boolean>(false)
+  const [createdUser, setCreatedUser] = useState<User | null>(null)
 
   const onCreatePressed = async (data: SignUpFormData) => {
     setIsSubmitting(true)
 
     try {
-      await register(data)
-      router.push(ROUTES.HOME.ROUTE)
+      const newUser = await register(data)
+      setCreatedUser(newUser)
+      setShowSuccess(true)
     } catch (error: unknown) {
       Alert.alert('Erro', (error as Error).message)
     } finally {
@@ -44,9 +49,23 @@ const SignUp = () => {
   }
 
   return (
-    <ScreenPageContainer className='gap-8 pt-24'>
+    <AuthPageContainer
+      destination={ROUTES.SIGN_IN.ROUTE}
+      destinationLabel='Já tem conta? Faça login'>
+      <ConfirmModal
+        visible={showSuccess}
+        title='Conta criada!'
+        variant='success'
+        showCancel={false}
+        description='Seu cadastro foi realizado com sucesso. Bem-vindo ao FitAura!'
+        confirmLabel='Começar'
+        onConfirm={() => {
+          if (createdUser) loginDirectly(createdUser)
+          setShowSuccess(false)
+          router.replace(ROUTES.HOME.ROUTE)
+        }}
+      />
       <ScreenPageTitle>Criar conta</ScreenPageTitle>
-
       <ScrollView showsVerticalScrollIndicator={false}>
         <FormWrapper>
           <View className='items-center gap-3'>
@@ -66,7 +85,6 @@ const SignUp = () => {
                 ...VALIDATIONS.email,
                 validate: (value: string) => {
                   const exists = users.some((u) => u.email.toLowerCase() === value.toLowerCase())
-
                   return !exists || 'E-mail já está em uso'
                 },
               }}
@@ -146,14 +164,8 @@ const SignUp = () => {
             )}
           </View>
         </FormWrapper>
-
-        <Link
-          href={ROUTES.SIGN_IN.ROUTE}
-          className='pt-12 text-center text-white'>
-          Já tem conta? Faça login
-        </Link>
       </ScrollView>
-    </ScreenPageContainer>
+    </AuthPageContainer>
   )
 }
 

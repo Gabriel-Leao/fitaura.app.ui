@@ -11,7 +11,6 @@ import {
 } from 'react-native'
 
 import * as ImagePicker from 'expo-image-picker'
-import { router } from 'expo-router'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
 import {
@@ -20,6 +19,7 @@ import {
   type UserGoal,
   type UserSex,
 } from '@/@types/enums'
+import ConfirmModal from '@/components/ConfirmModal'
 import { useUserContext } from '@/components/context/user/useUserContext'
 import CustomInput from '@/components/CustomInput'
 import CustomPicker from '@/components/CustomPicker'
@@ -27,7 +27,6 @@ import FormWrapper from '@/components/FormWrapper'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import { COLORS } from '@/constants/colors'
 import { ACTIVITY_LEVEL_OPTIONS, GOAL_OPTIONS, SEX_OPTIONS } from '@/constants/pickerOptions'
-import { ROUTES } from '@/constants/routes'
 import { VALIDATIONS } from '@/constants/validations'
 
 type EditFormData = {
@@ -40,6 +39,8 @@ type EditFormData = {
   goal: UserGoal
   activityLevel: ActivityLevel
 }
+
+type ModalType = 'logout' | 'delete' | 'save' | null
 
 const Profile = () => {
   const {
@@ -54,6 +55,8 @@ const Profile = () => {
   const [isUploading, setIsUploading] = useState<boolean>(false)
   const [isEditing, setIsEditing] = useState<boolean>(false)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [activeModal, setActiveModal] = useState<ModalType>(null)
+  const [pendingData, setPendingData] = useState<EditFormData | null>(null)
 
   const {
     control,
@@ -100,50 +103,48 @@ const Profile = () => {
     setIsEditing(false)
   }
 
-  const onSavePressed = async (data: EditFormData) => {
+  const onSavePressed = (data: EditFormData) => {
+    setPendingData(data)
+    setActiveModal('save')
+  }
+
+  const confirmSave = async () => {
+    if (!pendingData) return
+    setActiveModal(null)
     setIsSubmitting(true)
 
     try {
       await updateUser(user.id, {
-        name: data.name.trim(),
-        age: Number(data.age),
-        email: data.email.toLowerCase(),
-        height: data.height,
-        weight: Number(data.weight),
-        sex: data.sex,
-        goal: data.goal,
-        activityLevel: data.activityLevel,
+        name: pendingData.name.trim(),
+        age: Number(pendingData.age),
+        email: pendingData.email.toLowerCase(),
+        height: pendingData.height,
+        weight: Number(pendingData.weight),
+        sex: pendingData.sex,
+        goal: pendingData.goal,
+        activityLevel: pendingData.activityLevel,
       })
-
       setIsEditing(false)
     } catch (error: unknown) {
       Alert.alert('Erro', (error as Error).message)
     } finally {
       setIsSubmitting(false)
+      setPendingData(null)
     }
   }
 
-  const onLogoutPressed = async () => {
+  const confirmLogout = async () => {
+    setActiveModal(null)
     await logout()
-    router.push(ROUTES.SIGN_IN.ROUTE)
   }
 
-  const onDeletePressed = async () => {
-    Alert.alert('Apagar conta', 'Tem certeza? Esta ação não pode ser desfeita.', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Apagar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteUser(user.id)
-            router.push(ROUTES.SIGN_IN.ROUTE)
-          } catch (error: unknown) {
-            Alert.alert('Erro', (error as Error).message)
-          }
-        },
-      },
-    ])
+  const confirmDelete = async () => {
+    setActiveModal(null)
+    try {
+      await deleteUser(user.id)
+    } catch (error: unknown) {
+      Alert.alert('Erro', (error as Error).message)
+    }
   }
 
   const onAvatarPressed = () => {
@@ -156,47 +157,36 @@ const Profile = () => {
 
   const openCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync()
-
     if (status !== 'granted') {
       Alert.alert('Permissão negada', 'Habilite o acesso à câmera nas configurações.')
       return
     }
-
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: 'images',
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
     })
-
-    if (!result.canceled) {
-      await saveAvatar(result.assets[0].uri)
-    }
+    if (!result.canceled) await saveAvatar(result.assets[0].uri)
   }
 
   const openGallery = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
-
     if (status !== 'granted') {
       Alert.alert('Permissão negada', 'Habilite o acesso à galeria nas configurações.')
       return
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: 'images',
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
     })
-
-    if (!result.canceled) {
-      await saveAvatar(result.assets[0].uri)
-    }
+    if (!result.canceled) await saveAvatar(result.assets[0].uri)
   }
 
   const saveAvatar = async (uri: string) => {
     setIsUploading(true)
-
     try {
       await updateAvatar(user.id, uri)
     } catch (error: unknown) {
@@ -220,6 +210,34 @@ const Profile = () => {
 
   return (
     <ScreenPageContainer className='pb-20'>
+      <ConfirmModal
+        visible={activeModal === 'logout'}
+        title='Sair da conta'
+        description='Tem certeza que deseja sair?'
+        confirmLabel='Sair'
+        onConfirm={confirmLogout}
+        onCancel={() => setActiveModal(null)}
+      />
+
+      <ConfirmModal
+        visible={activeModal === 'delete'}
+        title='Apagar conta'
+        description='Esta ação é permanente e não pode ser desfeita. Todos os seus dados serão removidos.'
+        confirmLabel='Apagar conta'
+        variant='danger'
+        onConfirm={confirmDelete}
+        onCancel={() => setActiveModal(null)}
+      />
+
+      <ConfirmModal
+        visible={activeModal === 'save'}
+        title='Salvar alterações'
+        description='Deseja salvar as alterações no seu perfil?'
+        confirmLabel='Salvar'
+        onConfirm={confirmSave}
+        onCancel={() => setActiveModal(null)}
+      />
+
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className='mt-10 items-center'>
           <TouchableOpacity
@@ -240,7 +258,6 @@ const Profile = () => {
                 />
               </View>
             )}
-
             <View className='absolute bottom-0 right-0 rounded-full bg-primary p-2'>
               {isUploading ? (
                 <ActivityIndicator
@@ -260,7 +277,6 @@ const Profile = () => {
           {!isEditing && (
             <>
               <Text className='mt-2 text-xl font-semibold text-white'>{user.name}</Text>
-
               <Text className='mt-0.5 text-sm text-gray-400'>{user.age} anos</Text>
             </>
           )}
@@ -274,7 +290,6 @@ const Profile = () => {
                 size={14}
                 color={COLORS.primary}
               />
-
               <Text className='text-sm text-primary'>Editar perfil</Text>
             </TouchableOpacity>
           )}
@@ -289,7 +304,6 @@ const Profile = () => {
                 control={control}
                 rules={VALIDATIONS.name}
               />
-
               <CustomInput
                 name='age'
                 placeholder='Idade'
@@ -297,7 +311,6 @@ const Profile = () => {
                 keyboardType='numeric'
                 rules={VALIDATIONS.age}
               />
-
               <CustomInput
                 name='email'
                 placeholder='E-mail'
@@ -309,12 +322,10 @@ const Profile = () => {
                     const exists = users.some(
                       (u) => u.email.toLowerCase() === value.toLowerCase() && u.id !== user.id,
                     )
-
                     return !exists || 'E-mail já está em uso'
                   },
                 }}
               />
-
               <CustomInput
                 name='height'
                 placeholder='Altura em cm'
@@ -322,7 +333,6 @@ const Profile = () => {
                 keyboardType='numeric'
                 rules={VALIDATIONS.height}
               />
-
               <CustomInput
                 name='weight'
                 placeholder='Peso em kg'
@@ -338,7 +348,6 @@ const Profile = () => {
                 rules={{ required: 'Selecione seu sexo' }}
                 options={SEX_OPTIONS}
               />
-
               <CustomPicker
                 control={control}
                 name='goal'
@@ -346,7 +355,6 @@ const Profile = () => {
                 rules={{ required: 'Selecione seu objetivo' }}
                 options={GOAL_OPTIONS}
               />
-
               <CustomPicker
                 control={control}
                 name='activityLevel'
@@ -385,7 +393,6 @@ const Profile = () => {
                 key={label}
                 className='border-b border-white/10 pb-3'>
                 <Text className='text-xs text-gray-400'>{label}</Text>
-
                 <Text className='mt-0.5 text-base font-semibold text-white'>{value}</Text>
               </View>
             ))}
@@ -395,26 +402,24 @@ const Profile = () => {
         {!isEditing && (
           <View className='gap-4 px-4 py-8'>
             <TouchableOpacity
-              onPress={onLogoutPressed}
+              onPress={() => setActiveModal('logout')}
               className='flex-row items-center justify-center gap-2 rounded-xl bg-muted py-3'>
               <FontAwesome5
                 name='sign-out-alt'
                 size={20}
                 color='white'
               />
-
               <Text className='text-lg font-semibold text-white'>Sair</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={onDeletePressed}
+              onPress={() => setActiveModal('delete')}
               className='flex-row items-center justify-center gap-2 rounded-xl bg-red-600 py-3'>
               <FontAwesome5
                 name='trash-alt'
                 size={20}
                 color='white'
               />
-
               <Text className='text-lg font-semibold text-white'>Apagar conta</Text>
             </TouchableOpacity>
           </View>

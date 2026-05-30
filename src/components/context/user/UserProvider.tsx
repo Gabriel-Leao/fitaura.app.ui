@@ -15,6 +15,7 @@ type UserContextType = {
   isLoading: boolean
   register: (userData: Omit<User, 'id'>) => Promise<User>
   login: (email: string, password: string) => Promise<User>
+  loginDirectly: (user: User) => void
   logout: () => Promise<void>
   deleteUser: (id: string) => Promise<void>
   updateAvatar: (id: string, uri: string) => Promise<void>
@@ -95,7 +96,6 @@ export const UserProvider = ({ children }: React.PropsWithChildren) => {
     }
 
     setUsers((prev) => [...prev, newUser])
-    setCurrentUser(newUser)
 
     return newUser
   }
@@ -113,6 +113,10 @@ export const UserProvider = ({ children }: React.PropsWithChildren) => {
 
     setCurrentUser(user)
     return user
+  }
+
+  const loginDirectly = (user: User) => {
+    setCurrentUser(user)
   }
 
   const logout = async () => {
@@ -171,6 +175,7 @@ export const UserProvider = ({ children }: React.PropsWithChildren) => {
         isLoading,
         register,
         login,
+        loginDirectly,
         logout,
         deleteUser,
         updateAvatar,
