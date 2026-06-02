@@ -1,26 +1,101 @@
 import { useState } from 'react'
-import { FlatList, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, Modal, Text, TouchableOpacity, View } from 'react-native'
 
 import { router } from 'expo-router'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
-import { type Order, ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from '@/@types/shop'
+import {
+  type Order,
+  ORDER_STATUS_COLORS,
+  ORDER_STATUS_LABELS,
+  ORDER_STATUS_TOOLTIPS,
+  type OrderStatus,
+} from '@/@types/shop'
 import ConfirmModal from '@/components/ConfirmModal'
+import { CANCELLABLE_STATUSES, REFUNDABLE_STATUSES } from '@/components/context/shop/ShopProvider'
 import { useShopContext } from '@/components/context/shop/useShopContext'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import { COLORS } from '@/constants/colors'
 import { ROUTES } from '@/constants/routes'
 
-const REFUNDABLE_STATUSES = new Set(['received', 'processing', 'delayed', 'failed'])
+const formatDate = (isoString: string): string => {
+  if (!isoString) return ''
+  const d = new Date(isoString)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
-const OrderCard = ({ item, onRefund }: { item: Order; onRefund: (order: Order) => void }) => {
+const StatusTooltip = ({
+  status,
+  visible,
+  onClose,
+}: {
+  status: OrderStatus
+  visible: boolean
+  onClose: () => void
+}) => {
+  const color = ORDER_STATUS_COLORS[status]
+  return (
+    <Modal
+      transparent
+      visible={visible}
+      animationType='fade'
+      onRequestClose={onClose}>
+      <TouchableOpacity
+        className='flex-1 items-center justify-center bg-black/60'
+        activeOpacity={1}
+        onPress={onClose}>
+        <View className='mx-8 rounded-2xl bg-[#1a1a2e] p-5 shadow-lg'>
+          <View className='mb-3 flex-row items-center gap-2'>
+            <View
+              className='h-3 w-3 rounded-full'
+              style={{ backgroundColor: color }}
+            />
+            <Text
+              className='text-base font-bold'
+              style={{ color }}>
+              {ORDER_STATUS_LABELS[status]}
+            </Text>
+          </View>
+          <Text className='text-sm leading-5 text-white/70'>{ORDER_STATUS_TOOLTIPS[status]}</Text>
+          <TouchableOpacity
+            onPress={onClose}
+            className='mt-4 items-center rounded-xl bg-white/10 py-2'>
+            <Text className='text-sm text-white'>Fechar</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  )
+}
+
+const OrderCard = ({
+  item,
+  onCancel,
+  onRefund,
+}: {
+  item: Order
+  onCancel: (order: Order) => void
+  onRefund: (order: Order) => void
+}) => {
+  const [tooltipVisible, setTooltipVisible] = useState(false)
   const color = ORDER_STATUS_COLORS[item.status]
+  const canCancel = CANCELLABLE_STATUSES.has(item.status)
   const canRefund = REFUNDABLE_STATUSES.has(item.status)
+  const hasActions = canCancel || canRefund
 
   return (
     <View className='mb-4 rounded-xl bg-white/5 p-4'>
       <View className='mb-3 flex-row items-center justify-between'>
-        <View className='flex-row items-center gap-2'>
+        <TouchableOpacity
+          onPress={() => setTooltipVisible(true)}
+          className='flex-row items-center gap-2'>
           <View
             className='h-2.5 w-2.5 rounded-full'
             style={{ backgroundColor: color }}
@@ -30,16 +105,14 @@ const OrderCard = ({ item, onRefund }: { item: Order; onRefund: (order: Order) =
             style={{ color }}>
             {item.statusLabel ?? ORDER_STATUS_LABELS[item.status]}
           </Text>
-        </View>
-        <Text className='text-[11px] text-white/40'>
-          {new Date(item.placedAtISO).toLocaleString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </Text>
+          <FontAwesome5
+            name='info-circle'
+            size={11}
+            color={color}
+            style={{ opacity: 0.7 }}
+          />
+        </TouchableOpacity>
+        <Text className='text-[11px] text-white/40'>{formatDate(item.placedAtISO)}</Text>
       </View>
 
       {item.items.map((cartItem) => (
@@ -55,41 +128,57 @@ const OrderCard = ({ item, onRefund }: { item: Order; onRefund: (order: Order) =
         </View>
       ))}
 
-      <View className='mt-3 flex-row items-center justify-between border-t border-white/10 pt-3'>
-        <View className='flex-row items-center gap-3'>
+      <View className='mt-3 border-t border-white/10 pt-3'>
+        <View className='mb-3 flex-row items-center gap-2'>
           <Text className='text-sm text-white/50'>Total pago</Text>
           <Text className='text-sm font-bold text-purple-400'>
             R$ {item.total.toFixed(2).replace('.', ',')}
           </Text>
         </View>
 
-        {canRefund && (
-          <TouchableOpacity
-            onPress={() => onRefund(item)}
-            className='flex-row items-center gap-1.5 rounded-lg bg-red-500/15 px-3 py-1.5'>
-            <FontAwesome5
-              name='undo'
-              size={10}
-              color={COLORS.dangerLight}
-            />
-            <Text className='text-xs font-semibold text-red-400'>Reembolso</Text>
-          </TouchableOpacity>
+        {hasActions && (
+          <View className='gap-2'>
+            {canCancel && (
+              <TouchableOpacity
+                onPress={() => onCancel(item)}
+                className='w-full flex-row items-center justify-center gap-2 rounded-lg bg-slate-500/20 py-2.5'>
+                <FontAwesome5
+                  name='times'
+                  size={11}
+                  color='#94a3b8'
+                />
+                <Text className='text-xs font-semibold text-slate-400'>Cancelar pedido</Text>
+              </TouchableOpacity>
+            )}
+            {canRefund && (
+              <TouchableOpacity
+                onPress={() => onRefund(item)}
+                className='w-full flex-row items-center justify-center gap-2 rounded-lg bg-red-500/15 py-2.5'>
+                <FontAwesome5
+                  name='undo'
+                  size={11}
+                  color='#f87171'
+                />
+                <Text className='text-xs font-semibold text-red-400'>Solicitar reembolso</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
       </View>
+
+      <StatusTooltip
+        status={item.status}
+        visible={tooltipVisible}
+        onClose={() => setTooltipVisible(false)}
+      />
     </View>
   )
 }
 
 export default function Orders() {
-  const { orders, removeOrder } = useShopContext()
+  const { orders, cancelOrder, requestRefund } = useShopContext()
+  const [cancelTarget, setCancelTarget] = useState<Order | null>(null)
   const [refundTarget, setRefundTarget] = useState<Order | null>(null)
-
-  const handleConfirmRefund = () => {
-    if (refundTarget) {
-      removeOrder(refundTarget.id)
-      setRefundTarget(null)
-    }
-  }
 
   return (
     <ScreenPageContainer className='py-16'>
@@ -110,6 +199,7 @@ export default function Orders() {
         renderItem={({ item }) => (
           <OrderCard
             item={item}
+            onCancel={setCancelTarget}
             onRefund={setRefundTarget}
           />
         )}
@@ -128,17 +218,38 @@ export default function Orders() {
       />
 
       <ConfirmModal
+        visible={!!cancelTarget}
+        variant='danger'
+        title='Cancelar pedido'
+        description={
+          cancelTarget
+            ? `Deseja cancelar o pedido de R$ ${cancelTarget.total.toFixed(2).replace('.', ',')}? Se já foi cobrado, você poderá solicitar reembolso.`
+            : ''
+        }
+        confirmLabel='Cancelar pedido'
+        cancelLabel='Voltar'
+        onConfirm={() => {
+          if (cancelTarget) cancelOrder(cancelTarget.id)
+          setCancelTarget(null)
+        }}
+        onCancel={() => setCancelTarget(null)}
+      />
+
+      <ConfirmModal
         visible={!!refundTarget}
         variant='danger'
         title='Solicitar reembolso'
         description={
           refundTarget
-            ? `Confirmar reembolso de R$ ${refundTarget.total.toFixed(2).replace('.', ',')}? O pedido será removido do histórico.`
+            ? `Confirmar reembolso de R$ ${refundTarget.total.toFixed(2).replace('.', ',')}? O valor será estornado em até 5 dias úteis.`
             : ''
         }
         confirmLabel='Confirmar reembolso'
-        cancelLabel='Cancelar'
-        onConfirm={handleConfirmRefund}
+        cancelLabel='Voltar'
+        onConfirm={() => {
+          if (refundTarget) requestRefund(refundTarget.id)
+          setRefundTarget(null)
+        }}
         onCancel={() => setRefundTarget(null)}
       />
     </ScreenPageContainer>
