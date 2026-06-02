@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, Text, TouchableOpacity, View } from 'react-native'
 
 import { useFocusEffect } from 'expo-router'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
@@ -25,7 +25,7 @@ const formatDate = (dateStr: string): string => {
   return date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
-export default function Workout() {
+const Workout = () => {
   const { getDayLogs, getWeeklyStats, removeLog } = useWorkoutContext()
 
   const [currentDate, setCurrentDate] = useState<string>(toDateString(new Date()))
@@ -60,97 +60,171 @@ export default function Workout() {
   const toggleLog = (id: string) =>
     setOpenLogs((prev) => (prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]))
 
-  return (
-    <ScreenPageContainer className='py-20'>
-      <ScrollView
-        className='px-5'
-        showsVerticalScrollIndicator={false}>
-        <Text className='mb-6 text-center text-2xl font-bold text-white'>Seus treinos</Text>
-
-        <View className='mb-6 rounded-2xl border border-primary/40 bg-primary/20 p-4'>
-          <Text className='mb-1 text-center text-xs text-gray-400'>Semana {weekRange}</Text>
-          <Text className='text-center text-3xl font-bold text-white'>
-            {weeklyStats.totalWorkouts}{' '}
-            <Text className='text-xl font-normal text-gray-300'>
-              treino{weeklyStats.totalWorkouts !== 1 ? 's' : ''}
+  const renderLogItem = ({ item: log }: { item: WorkoutLog }) => {
+    const isOpen = openLogs.includes(log.id)
+    return (
+      <View className='mb-4 overflow-hidden rounded-2xl border border-white/10'>
+        <TouchableOpacity
+          onPress={() => toggleLog(log.id)}
+          className='flex-row items-center justify-between p-4'>
+          <View className='flex-1'>
+            <Text className='font-semibold text-white'>{log.templateName}</Text>
+            <Text className='mt-0.5 text-xs text-gray-400'>
+              {log.exercises.length} exercício(s) • {log.totalCalories} kcal •{' '}
+              {log.totalDurationMinutes} min
             </Text>
-          </Text>
+          </View>
+          <View className='flex-row items-center gap-3'>
+            <TouchableOpacity
+              onPress={() => setEditingLog(log)}
+              className='p-1'>
+              <FontAwesome5
+                name='edit'
+                size={13}
+                color={COLORS.primary}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => removeLog(log.id)}
+              className='p-1'>
+              <FontAwesome5
+                name='trash-alt'
+                size={12}
+                color={COLORS.danger}
+              />
+            </TouchableOpacity>
+            <FontAwesome5
+              name={isOpen ? 'chevron-up' : 'chevron-down'}
+              size={14}
+              color='white'
+            />
+          </View>
+        </TouchableOpacity>
 
-          <View className='mt-3 flex-row justify-around border-t border-white/10 pt-3'>
-            <View className='items-center'>
-              <Text className='text-xs text-gray-400'>Calorias</Text>
-              <Text className='font-semibold text-white'>{weeklyStats.totalCalories}</Text>
-              <Text className='text-xs text-gray-500'>kcal</Text>
-            </View>
-            <View className='items-center'>
-              <Text className='text-xs text-gray-400'>Peso total</Text>
-              <Text className='font-semibold text-white'>
-                {weeklyStats.totalWeightLifted.toLocaleString('pt-BR')}
+        {isOpen && (
+          <View className='px-4 pb-4'>
+            {log.exercises.map((exercise) => (
+              <View
+                key={exercise.id}
+                className='border-b border-white/5 py-2'>
+                <Text className='text-sm text-white'>{exercise.exerciseName}</Text>
+                <Text className='text-xs text-gray-400'>
+                  {exercise.type === ExerciseType.Strength
+                    ? `${exercise.sets} séries × ${exercise.reps} reps${exercise.weightKg > 0 ? ` @ ${exercise.weightKg}kg` : ''}`
+                    : `${exercise.durationMinutes} min${exercise.distanceKm > 0 ? ` • ${exercise.distanceKm}km` : ''}`}
+                  {' • '}
+                  {exercise.caloriesBurned} kcal
+                </Text>
+              </View>
+            ))}
+            {log.totalWeightLifted > 0 && (
+              <Text className='mt-2 text-xs text-gray-500'>
+                Peso total levantado: {log.totalWeightLifted.toLocaleString('pt-BR')} kg
               </Text>
-              <Text className='text-xs text-gray-500'>kg</Text>
-            </View>
-            <View className='items-center'>
-              <Text className='text-xs text-gray-400'>Distância</Text>
-              <Text className='font-semibold text-white'>{weeklyStats.totalDistanceKm}</Text>
-              <Text className='text-xs text-gray-500'>km</Text>
-            </View>
-            <View className='items-center'>
-              <Text className='text-xs text-gray-400'>Tempo</Text>
-              <Text className='font-semibold text-white'>{weeklyStats.totalDurationMinutes}</Text>
-              <Text className='text-xs text-gray-500'>min</Text>
-            </View>
+            )}
+          </View>
+        )}
+      </View>
+    )
+  }
+
+  const listHeader = (
+    <>
+      <Text className='mb-6 text-center text-2xl font-bold text-white'>Seus treinos</Text>
+
+      <View className='mb-6 rounded-2xl border border-primary/40 bg-primary/20 p-4'>
+        <Text className='mb-1 text-center text-xs text-gray-400'>Semana {weekRange}</Text>
+        <Text className='text-center text-3xl font-bold text-white'>
+          {weeklyStats.totalWorkouts}{' '}
+          <Text className='text-xl font-normal text-gray-300'>
+            treino{weeklyStats.totalWorkouts !== 1 ? 's' : ''}
+          </Text>
+        </Text>
+
+        <View className='mt-3 flex-row justify-around border-t border-white/10 pt-3'>
+          <View className='items-center'>
+            <Text className='text-xs text-gray-400'>Calorias</Text>
+            <Text className='font-semibold text-white'>{weeklyStats.totalCalories}</Text>
+            <Text className='text-xs text-gray-500'>kcal</Text>
+          </View>
+          <View className='items-center'>
+            <Text className='text-xs text-gray-400'>Peso total</Text>
+            <Text className='font-semibold text-white'>
+              {weeklyStats.totalWeightLifted.toLocaleString('pt-BR')}
+            </Text>
+            <Text className='text-xs text-gray-500'>kg</Text>
+          </View>
+          <View className='items-center'>
+            <Text className='text-xs text-gray-400'>Distância</Text>
+            <Text className='font-semibold text-white'>{weeklyStats.totalDistanceKm}</Text>
+            <Text className='text-xs text-gray-500'>km</Text>
+          </View>
+          <View className='items-center'>
+            <Text className='text-xs text-gray-400'>Tempo</Text>
+            <Text className='font-semibold text-white'>{weeklyStats.totalDurationMinutes}</Text>
+            <Text className='text-xs text-gray-500'>min</Text>
           </View>
         </View>
+      </View>
 
-        <View className='mb-4 flex-row items-center justify-between'>
-          <TouchableOpacity
-            onPress={goBack}
-            className='p-2'>
-            <FontAwesome5
-              name='chevron-left'
-              size={16}
-              color='white'
-            />
-          </TouchableOpacity>
-          <Text className='font-semibold capitalize text-white'>
-            {isToday ? 'Hoje' : formatDate(currentDate)}
-          </Text>
-          <TouchableOpacity
-            onPress={goForward}
-            disabled={isToday}
-            className='p-2'>
-            <FontAwesome5
-              name='chevron-right'
-              size={16}
-              color={isToday ? COLORS.grayDark : 'white'}
-            />
-          </TouchableOpacity>
-        </View>
+      <View className='mb-4 flex-row items-center justify-between'>
+        <TouchableOpacity
+          onPress={goBack}
+          className='p-2'>
+          <FontAwesome5
+            name='chevron-left'
+            size={16}
+            color='white'
+          />
+        </TouchableOpacity>
+        <Text className='font-semibold capitalize text-white'>
+          {isToday ? 'Hoje' : formatDate(currentDate)}
+        </Text>
+        <TouchableOpacity
+          onPress={goForward}
+          disabled={isToday}
+          className='p-2'>
+          <FontAwesome5
+            name='chevron-right'
+            size={16}
+            color={isToday ? COLORS.grayDark : 'white'}
+          />
+        </TouchableOpacity>
+      </View>
 
-        <View className='mb-4 flex-row gap-3'>
-          <TouchableOpacity
-            onPress={() => setShowLogModal(true)}
-            className='flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-primary py-3'>
-            <FontAwesome5
-              name='plus'
-              size={14}
-              color='white'
-            />
-            <Text className='font-semibold text-white'>Registrar treino</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setShowTemplatesModal(true)}
-            className='flex-row items-center gap-2 rounded-xl bg-white/10 px-4 py-3'>
-            <FontAwesome5
-              name='list'
-              size={14}
-              color={COLORS.primary}
-            />
-            <Text className='text-sm text-primary'>Templates</Text>
-          </TouchableOpacity>
-        </View>
+      <View className='mb-4 flex-row gap-3'>
+        <TouchableOpacity
+          onPress={() => setShowLogModal(true)}
+          className='flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-primary py-3'>
+          <FontAwesome5
+            name='plus'
+            size={14}
+            color='white'
+          />
+          <Text className='font-semibold text-white'>Registrar treino</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setShowTemplatesModal(true)}
+          className='flex-row items-center gap-2 rounded-xl bg-white/10 px-4 py-3'>
+          <FontAwesome5
+            name='list'
+            size={14}
+            color={COLORS.primary}
+          />
+          <Text className='text-sm text-primary'>Templates</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  )
 
-        {dayLogs.length === 0 ? (
+  return (
+    <ScreenPageContainer className='py-20'>
+      <FlatList<WorkoutLog>
+        data={dayLogs}
+        keyExtractor={(item) => item.id}
+        renderItem={renderLogItem}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={
           <View className='items-center py-10'>
             <FontAwesome5
               name='dumbbell'
@@ -161,78 +235,10 @@ export default function Workout() {
               Nenhum treino registrado {isToday ? 'hoje' : 'neste dia'}.
             </Text>
           </View>
-        ) : (
-          dayLogs.map((log) => {
-            const isOpen = openLogs.includes(log.id)
-            return (
-              <View
-                key={log.id}
-                className='mb-4 overflow-hidden rounded-2xl border border-white/10'>
-                <TouchableOpacity
-                  onPress={() => toggleLog(log.id)}
-                  className='flex-row items-center justify-between p-4'>
-                  <View className='flex-1'>
-                    <Text className='font-semibold text-white'>{log.templateName}</Text>
-                    <Text className='mt-0.5 text-xs text-gray-400'>
-                      {log.exercises.length} exercício(s) • {log.totalCalories} kcal •{' '}
-                      {log.totalDurationMinutes} min
-                    </Text>
-                  </View>
-                  <View className='flex-row items-center gap-3'>
-                    <TouchableOpacity
-                      onPress={() => setEditingLog(log)}
-                      className='p-1'>
-                      <FontAwesome5
-                        name='edit'
-                        size={13}
-                        color={COLORS.primary}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => removeLog(log.id)}
-                      className='p-1'>
-                      <FontAwesome5
-                        name='trash-alt'
-                        size={12}
-                        color={COLORS.danger}
-                      />
-                    </TouchableOpacity>
-                    <FontAwesome5
-                      name={isOpen ? 'chevron-up' : 'chevron-down'}
-                      size={14}
-                      color='white'
-                    />
-                  </View>
-                </TouchableOpacity>
-
-                {isOpen && (
-                  <View className='px-4 pb-4'>
-                    {log.exercises.map((exercise) => (
-                      <View
-                        key={exercise.id}
-                        className='border-b border-white/5 py-2'>
-                        <Text className='text-sm text-white'>{exercise.exerciseName}</Text>
-                        <Text className='text-xs text-gray-400'>
-                          {exercise.type === ExerciseType.Strength
-                            ? `${exercise.sets} séries × ${exercise.reps} reps${exercise.weightKg > 0 ? ` @ ${exercise.weightKg}kg` : ''}`
-                            : `${exercise.durationMinutes} min${exercise.distanceKm > 0 ? ` • ${exercise.distanceKm}km` : ''}`}
-                          {' • '}
-                          {exercise.caloriesBurned} kcal
-                        </Text>
-                      </View>
-                    ))}
-                    {log.totalWeightLifted > 0 && (
-                      <Text className='mt-2 text-xs text-gray-500'>
-                        Peso total levantado: {log.totalWeightLifted.toLocaleString('pt-BR')} kg
-                      </Text>
-                    )}
-                  </View>
-                )}
-              </View>
-            )
-          })
-        )}
-      </ScrollView>
+        }
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
+        showsVerticalScrollIndicator={false}
+      />
 
       <LogWorkoutModal
         visible={showLogModal}
@@ -256,3 +262,5 @@ export default function Workout() {
     </ScreenPageContainer>
   )
 }
+
+export default Workout

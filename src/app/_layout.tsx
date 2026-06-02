@@ -1,6 +1,7 @@
 import { Slot } from 'expo-router'
 
 import { DietProvider } from '@/components/context/diet/DietProvider'
+import { ShopProvider } from '@/components/context/shop/ShopProvider'
 import { UserProvider } from '@/components/context/user/UserProvider'
 import { useUserContext } from '@/components/context/user/useUserContext'
 import { WorkoutProvider } from '@/components/context/workout/WorkoutProvider'
@@ -14,7 +15,9 @@ const ProvidersWithUser = () => {
   return (
     <DietProvider userId={userId}>
       <WorkoutProvider userId={userId}>
-        <Slot />
+        <ShopProvider>
+          <Slot />
+        </ShopProvider>
       </WorkoutProvider>
     </DietProvider>
   )

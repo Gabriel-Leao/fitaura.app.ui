@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { ScrollView, View } from 'react-native'
 
-import { ShopProvider } from '@/components/context/shop/ShopProvider'
 import { useShopContext } from '@/components/context/shop/useShopContext'
 import ScreenPageContainer from '@/components/ScreenPageContainer'
 import { IotSensorBanner } from '@/components/shop/IotSensorBanner'
@@ -11,7 +10,7 @@ import { ShopOrderHistory } from '@/components/shop/ShopOrderHistory'
 import { ShopProductSection } from '@/components/shop/ShopProductSection'
 import { STORE_DATA } from '@/constants/store'
 
-const ShopContent = () => {
+const Shop = () => {
   const { iotReading } = useShopContext()
   const [cartVisible, setCartVisible] = useState<boolean>(false)
 
@@ -42,10 +41,4 @@ const ShopContent = () => {
   )
 }
 
-export default function Shop() {
-  return (
-    <ShopProvider>
-      <ShopContent />
-    </ShopProvider>
-  )
-}
+export default Shop

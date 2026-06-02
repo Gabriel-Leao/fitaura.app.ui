@@ -44,7 +44,9 @@ export const ShopOrderHistory = () => {
                   {item.statusLabel ?? ORDER_STATUS_LABELS[item.status]}
                 </Text>
               </View>
-              <Text className='text-[10px] text-white/40'>{item.placedAt}</Text>
+              <Text className='text-[10px] text-white/40'>
+                {new Date(item.placedAtISO).toLocaleDateString('pt-BR')}
+              </Text>
             </View>
             {item.items.map((cartItem) => (
               <Text

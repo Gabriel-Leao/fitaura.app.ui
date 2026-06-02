@@ -1,12 +1,14 @@
 export type StockLevel = 'high' | 'low' | 'out'
 
-export type OrderStatus = 'received' | 'processing' | 'shipped' | 'delivered'
+export type OrderStatus = 'received' | 'processing' | 'shipped' | 'delivered' | 'delayed' | 'failed'
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   received: 'Pedido recebido',
   processing: 'Em separação',
   shipped: 'A caminho',
   delivered: 'Entregue',
+  delayed: 'Pedido atrasado',
+  failed: 'Falha na entrega',
 }
 
 export const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
@@ -14,6 +16,8 @@ export const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
   processing: '#fb923c',
   shipped: '#60a5fa',
   delivered: '#4ade80',
+  delayed: '#f97316',
+  failed: '#f87171',
 }
 
 export interface IoTReading {
@@ -34,6 +38,7 @@ export interface Order {
   items: CartItem[]
   total: number
   placedAt: string
+  placedAtISO: string
   status: OrderStatus
   statusLabel: string
 }

@@ -1,4 +1,4 @@
-import { createContext, startTransition, useCallback, useEffect, useRef, useState } from 'react'
+import { createContext, useCallback, useEffect, useRef, useState } from 'react'
 import { Alert } from 'react-native'
 
 import Constants from 'expo-constants'
@@ -13,8 +13,14 @@ import { STORE_DATA } from '@/constants/store'
 const localIp = Constants.expoConfig?.hostUri?.split(':')[0]
 const SOCKET_URL = `http://${localIp}:3001`
 
+const DELAYED_AFTER_MS = 30_000
+const FAILED_AFTER_MS = 60_000
+const TERMINAL_STATUSES = new Set<OrderStatus>(['delivered', 'delayed', 'failed'])
+const IN_PROGRESS_STATUSES = new Set<OrderStatus>(['received', 'processing', 'shipped'])
+
 const cartKey = (userId: string) => `@fitaura:cart:${userId}`
 const ordersKey = (userId: string) => `@fitaura:orders:${userId}`
+const stockKey = (userId: string) => `@fitaura:stock:${userId}`
 
 type ShopContextType = {
   stockMap: Record<string, number>
@@ -29,15 +35,69 @@ type ShopContextType = {
   removeFromCart: (id: string) => void
   clearCart: () => void
   placeOrder: (onSuccess?: () => void) => void
+  removeOrder: (orderId: string) => void
 }
 
 export const ShopContext = createContext<ShopContextType | undefined>(undefined)
 
+const buildInitialStock = (): Record<string, number> => {
+  const initial: Record<string, number> = {}
+  STORE_DATA.forEach((section) =>
+    section.items.forEach((item) => {
+      initial[item.id] = Math.floor(Math.random() * 10) + 2
+    }),
+  )
+  return initial
+}
+
+const applyStatusUpdate = (
+  orderId: string,
+  status: OrderStatus,
+  label: string,
+  userId: string,
+  setOrders: React.Dispatch<React.SetStateAction<Order[]>>,
+) => {
+  setOrders((prev) => {
+    const updated = prev.map((o) => (o.id === orderId ? { ...o, status, statusLabel: label } : o))
+    AsyncStorage.setItem(ordersKey(userId), JSON.stringify(updated))
+    return updated
+  })
+}
+
+const resolveStaleOrders = (orders: Order[]): Order[] => {
+  const now = Date.now()
+  return orders.map((order) => {
+    if (TERMINAL_STATUSES.has(order.status)) return order
+    if (!IN_PROGRESS_STATUSES.has(order.status)) return order
+
+    let placedAt: number | null = null
+
+    if (order.placedAtISO) {
+      placedAt = new Date(order.placedAtISO).getTime()
+    }
+
+    if (!placedAt || isNaN(placedAt)) {
+      return { ...order, status: 'failed', statusLabel: 'Falha na entrega' }
+    }
+
+    const elapsed = now - placedAt
+
+    if (elapsed >= FAILED_AFTER_MS) {
+      return { ...order, status: 'failed', statusLabel: 'Falha na entrega' }
+    }
+    if (elapsed >= DELAYED_AFTER_MS) {
+      return { ...order, status: 'delayed', statusLabel: 'Pedido atrasado' }
+    }
+    return order
+  })
+}
+
 export const ShopProvider = ({ children }: React.PropsWithChildren) => {
   const { currentUser } = useUserContext()
-  const userId = currentUser!.id
+  const userId = currentUser?.id ?? null
 
   const [stockMap, setStockMap] = useState<Record<string, number>>({})
+  const [stockReady, setStockReady] = useState<boolean>(false)
   const [iotReading, setIotReading] = useState<IoTReading | null>(null)
   const [cart, setCart] = useState<CartItem[]>([])
   const [addingId, setAddingId] = useState<string | null>(null)
@@ -47,22 +107,48 @@ export const ShopProvider = ({ children }: React.PropsWithChildren) => {
   const iotIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const stockIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const socketRef = useRef<Socket | null>(null)
+  const deliveryTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
   useEffect(() => {
+    if (!userId) return
     const load = async () => {
       try {
-        const [cartRaw, ordersRaw] = await Promise.all([
+        const [cartRaw, ordersRaw, stockRaw] = await Promise.all([
           AsyncStorage.getItem(cartKey(userId)),
           AsyncStorage.getItem(ordersKey(userId)),
+          AsyncStorage.getItem(stockKey(userId)),
         ])
         setCart(cartRaw ? (JSON.parse(cartRaw) as CartItem[]) : [])
-        setOrders(ordersRaw ? (JSON.parse(ordersRaw) as Order[]) : [])
-      } catch {}
+
+        const rawOrders: Order[] = ordersRaw ? (JSON.parse(ordersRaw) as Order[]) : []
+        const resolvedOrders = resolveStaleOrders(rawOrders)
+
+        const hasChanges = resolvedOrders.some((o, i) => o.status !== rawOrders[i]?.status)
+        if (hasChanges) {
+          await AsyncStorage.setItem(ordersKey(userId), JSON.stringify(resolvedOrders))
+        }
+
+        setOrders(resolvedOrders)
+
+        if (stockRaw) {
+          setStockMap(JSON.parse(stockRaw) as Record<string, number>)
+        } else {
+          const fresh = buildInitialStock()
+          setStockMap(fresh)
+          await AsyncStorage.setItem(stockKey(userId), JSON.stringify(fresh))
+        }
+      } catch {
+        setStockMap(buildInitialStock())
+      } finally {
+        setStockReady(true)
+      }
     }
     load()
   }, [userId])
 
   useEffect(() => {
+    if (!userId) return
+
     const socket = io(SOCKET_URL, { transports: ['websocket'], autoConnect: true })
     socketRef.current = socket
 
@@ -72,13 +158,12 @@ export const ShopProvider = ({ children }: React.PropsWithChildren) => {
     socket.on(
       'order_status',
       ({ orderId, status, label }: { orderId: string; status: OrderStatus; label: string }) => {
-        setOrders((prev) => {
-          const updated = prev.map((o) =>
-            o.id === orderId ? { ...o, status, statusLabel: label } : o,
-          )
-          AsyncStorage.setItem(ordersKey(userId), JSON.stringify(updated))
-          return updated
-        })
+        const timer = deliveryTimersRef.current.get(orderId)
+        if (timer) {
+          clearTimeout(timer)
+          deliveryTimersRef.current.delete(orderId)
+        }
+        applyStatusUpdate(orderId, status, label, userId, setOrders)
       },
     )
 
@@ -88,13 +173,7 @@ export const ShopProvider = ({ children }: React.PropsWithChildren) => {
   }, [userId])
 
   useEffect(() => {
-    const initial: Record<string, number> = {}
-    STORE_DATA.forEach((section) =>
-      section.items.forEach((item) => {
-        initial[item.id] = Math.floor(Math.random() * 10) + 2
-      }),
-    )
-    startTransition(() => setStockMap(initial))
+    if (!stockReady || !userId) return
 
     const sendIoT = () => {
       setIotReading({
@@ -111,7 +190,9 @@ export const ShopProvider = ({ children }: React.PropsWithChildren) => {
         const randomId = ids[Math.floor(Math.random() * ids.length)]
         const delta = Math.random() < 0.4 ? -1 : 1
         const newStock = Math.max(0, Math.min(15, (prev[randomId] ?? 5) + delta))
-        return { ...prev, [randomId]: newStock }
+        const updated = { ...prev, [randomId]: newStock }
+        AsyncStorage.setItem(stockKey(userId), JSON.stringify(updated))
+        return updated
       })
     }
 
@@ -123,10 +204,11 @@ export const ShopProvider = ({ children }: React.PropsWithChildren) => {
       if (iotIntervalRef.current) clearInterval(iotIntervalRef.current)
       if (stockIntervalRef.current) clearInterval(stockIntervalRef.current)
     }
-  }, [])
+  }, [stockReady, userId])
 
   const persistCart = useCallback(
     async (items: CartItem[]) => {
+      if (!userId) return
       try {
         await AsyncStorage.setItem(cartKey(userId), JSON.stringify(items))
       } catch {}
@@ -136,9 +218,47 @@ export const ShopProvider = ({ children }: React.PropsWithChildren) => {
 
   const persistOrders = useCallback(
     async (items: Order[]) => {
+      if (!userId) return
       try {
         await AsyncStorage.setItem(ordersKey(userId), JSON.stringify(items))
       } catch {}
+    },
+    [userId],
+  )
+
+  const persistStock = useCallback(
+    async (stock: Record<string, number>) => {
+      if (!userId) return
+      try {
+        await AsyncStorage.setItem(stockKey(userId), JSON.stringify(stock))
+      } catch {}
+    },
+    [userId],
+  )
+
+  const scheduleDeliveryTimeout = useCallback(
+    (orderId: string, placedAtISO: string) => {
+      if (!userId) return
+
+      const now = Date.now()
+      const elapsed = now - new Date(placedAtISO).getTime()
+
+      const delayedIn = Math.max(0, DELAYED_AFTER_MS - elapsed)
+      const failedIn = Math.max(0, FAILED_AFTER_MS - elapsed)
+
+      const delayedTimer = setTimeout(() => {
+        applyStatusUpdate(orderId, 'delayed', 'Pedido atrasado', userId, setOrders)
+      }, delayedIn)
+
+      const failedTimer = setTimeout(() => {
+        applyStatusUpdate(orderId, 'failed', 'Falha na entrega', userId, setOrders)
+        deliveryTimersRef.current.delete(orderId)
+      }, failedIn)
+
+      deliveryTimersRef.current.set(orderId, delayedTimer)
+      setTimeout(() => {
+        deliveryTimersRef.current.set(orderId, failedTimer)
+      }, delayedIn)
     },
     [userId],
   )
@@ -220,6 +340,7 @@ export const ShopProvider = ({ children }: React.PropsWithChildren) => {
 
       if (cart.length === 0) return
 
+      const now = new Date()
       const total = cart.reduce((sum, item) => {
         const num = parseFloat(item.price.replace('R$ ', '').replace(',', '.'))
         return sum + num * item.quantity
@@ -229,7 +350,8 @@ export const ShopProvider = ({ children }: React.PropsWithChildren) => {
         id: `order_${Date.now()}`,
         items: cart,
         total,
-        placedAt: new Date().toLocaleString('pt-BR'),
+        placedAt: now.toLocaleDateString('pt-BR'),
+        placedAtISO: now.toISOString(),
         status: 'received',
         statusLabel: 'Pedido recebido',
       }
@@ -239,20 +361,44 @@ export const ShopProvider = ({ children }: React.PropsWithChildren) => {
         updatedStock[item.id] = Math.max(0, (updatedStock[item.id] ?? 0) - item.quantity)
       })
 
+      setStockMap(updatedStock)
+      persistStock(updatedStock)
+
       setOrders((prev) => {
         const updated = [order, ...prev]
         persistOrders(updated)
         return updated
       })
 
-      setStockMap(updatedStock)
       setCart([])
       persistCart([])
 
-      socketRef.current?.emit('place_order', { id: order.id, items: order.items })
+      if (socketRef.current?.connected) {
+        socketRef.current.emit('place_order', { id: order.id, items: order.items })
+        scheduleDeliveryTimeout(order.id, order.placedAtISO)
+      } else {
+        scheduleDeliveryTimeout(order.id, order.placedAtISO)
+      }
+
       onSuccess?.()
     },
-    [cart, stockMap, persistCart, persistOrders],
+    [cart, stockMap, persistCart, persistOrders, persistStock, scheduleDeliveryTimeout],
+  )
+
+  const removeOrder = useCallback(
+    (orderId: string) => {
+      const timer = deliveryTimersRef.current.get(orderId)
+      if (timer) {
+        clearTimeout(timer)
+        deliveryTimersRef.current.delete(orderId)
+      }
+      setOrders((prev) => {
+        const updated = prev.filter((o) => o.id !== orderId)
+        persistOrders(updated)
+        return updated
+      })
+    },
+    [persistOrders],
   )
 
   const cartTotal = cart.reduce((sum, item) => {
@@ -277,6 +423,7 @@ export const ShopProvider = ({ children }: React.PropsWithChildren) => {
         removeFromCart,
         clearCart,
         placeOrder,
+        removeOrder,
       }}>
       {children}
     </ShopContext.Provider>

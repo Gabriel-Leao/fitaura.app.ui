@@ -1,6 +1,6 @@
 # Fitaura App
 
-Aplicativo mobile focado em auxiliar na organização de rotina fitness, permitindo o gerenciamento de **usuários**, **acompanhamento alimentar**, **registro de treinos** e uma **loja** com produtos relacionados ao estilo de vida saudável.
+Aplicativo mobile focado em auxiliar na organização de rotina fitness, permitindo o gerenciamento de **usuários**, **acompanhamento alimentar**, **registro de treinos** e uma **loja** com produtos relacionados ao estilo de vida saudável.z
 
 ---
 
