@@ -1,7 +1,7 @@
 import { type Food, FoodType } from '@/@types/diet'
 
-export const DIET_STORAGE_KEY = '@fitaura:diet'
-export const CUSTOM_FOODS_STORAGE_KEY = '@fitaura:custom_foods'
+export const DIET_STORAGE_KEY = '@fitCare:diet'
+export const CUSTOM_FOODS_STORAGE_KEY = '@fitCare:custom_foods'
 
 export const DEFAULT_FOODS: Food[] = [
   {

@@ -1,4 +1,4 @@
-# Decisões Técnicas — FitAura
+# Decisões Técnicas — Fit Care
 
 ## 1. Arquitetura de telas e navegação
 
@@ -19,11 +19,11 @@ Todos os modelos de dados são definidos em `src/@types/` com `interface`, `type
 
 ## 3. Persistência local
 
-Utilizamos AsyncStorage com chaves namespaceadas por funcionalidade e por `userId` (ex: `@fitaura:diet:{id}`, `@fitaura:workout_logs:{id}`), de forma que dados de usuários diferentes não se misturam. O acesso ao AsyncStorage é sempre feito através dos wrappers genéricos `storageGet`, `storageSet` e `storageRemove` definidos em `services/storage.ts`, centralizando o tratamento de erros e a serialização JSON.
+Utilizamos AsyncStorage com chaves namespaceadas por funcionalidade e por `userId` (ex: `@fitCare:diet:{id}`, `@fitCare:workout_logs:{id}`), de forma que dados de usuários diferentes não se misturam. O acesso ao AsyncStorage é sempre feito através dos wrappers genéricos `storageGet`, `storageSet` e `storageRemove` definidos em `services/storage.ts`, centralizando o tratamento de erros e a serialização JSON.
 
 Persistimos: lista de usuários cadastrados, usuário logado atualmente, refeições do dia por usuário, alimentos customizados, logs de treino, templates customizados, carrinho, estoque e histórico de pedidos.
 
-O estoque é persistido por `userId` (`@fitaura:stock:{id}`) para que os decrementos causados por compras sobrevivam a remontagens do provider. Cada pedido armazena `placedAtISO` em formato ISO 8601, possibilitando validação de tempo precisa sem depender de string locale.
+O estoque é persistido por `userId` (`@fitCare:stock:{id}`) para que os decrementos causados por compras sobrevivam a remontagens do provider. Cada pedido armazena `placedAtISO` em formato ISO 8601, possibilitando validação de tempo precisa sem depender de string locale.
 
 Senhas são armazenadas como hash SHA-256 via `expo-crypto`, nunca em texto puro.
 

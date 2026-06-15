@@ -57,7 +57,7 @@ const SignUp = () => {
         title='Conta criada!'
         variant='success'
         showCancel={false}
-        description='Seu cadastro foi realizado com sucesso. Bem-vindo ao FitAura!'
+        description='Seu cadastro foi realizado com sucesso. Bem-vindo ao Fit Care!'
         confirmLabel='Começar'
         onConfirm={() => {
           if (createdUser) loginDirectly(createdUser)

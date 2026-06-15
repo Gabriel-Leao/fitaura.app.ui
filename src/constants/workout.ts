@@ -1,10 +1,10 @@
 import { UserGoal } from '@/@types/enums'
 import { type Exercise, ExerciseType, MuscleGroup, type WorkoutTemplate } from '@/@types/workout'
 
-export const WORKOUT_LOGS_KEY = '@fitaura:workout_logs'
-export const CUSTOM_TEMPLATES_KEY = '@fitaura:custom_templates'
-export const CUSTOM_EXERCISES_KEY = '@fitaura:custom_exercises'
-export const API_EXERCISES_KEY = '@fitaura:api_exercises'
+export const WORKOUT_LOGS_KEY = '@fitCare:workout_logs'
+export const CUSTOM_TEMPLATES_KEY = '@fitCare:custom_templates'
+export const CUSTOM_EXERCISES_KEY = '@fitCare:custom_exercises'
+export const API_EXERCISES_KEY = '@fitCare:api_exercises'
 
 export const DEFAULT_EXERCISES: Exercise[] = [
   {

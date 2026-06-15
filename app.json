@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "fitaura-app",
-    "slug": "fitaura-app",
+    "name": "fit-care-app",
+    "slug": "fit-care-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "fitauraapp",
+    "scheme": "fitcareapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

@@ -42,9 +42,9 @@ export const REFUNDABLE_STATUSES = new Set<OrderStatus>([
   'cancelled',
 ])
 
-const cartKey = (userId: string) => `@fitaura:cart:${userId}`
-const ordersKey = (userId: string) => `@fitaura:orders:${userId}`
-const stockKey = (userId: string) => `@fitaura:stock:${userId}`
+const cartKey = (userId: string) => `@fitCare:cart:${userId}`
+const ordersKey = (userId: string) => `@fitCare:orders:${userId}`
+const stockKey = (userId: string) => `@fitCare:stock:${userId}`
 
 type ShopContextType = {
   stockMap: Record<string, number>

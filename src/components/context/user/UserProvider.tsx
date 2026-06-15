@@ -152,8 +152,8 @@ export const UserProvider = ({ children }: React.PropsWithChildren) => {
         `${WORKOUT_LOGS_KEY}:${id}`,
         `${CUSTOM_TEMPLATES_KEY}:${id}`,
         `${CUSTOM_EXERCISES_KEY}:${id}`,
-        `@fitaura:cart:${id}`,
-        `@fitaura:orders:${id}`,
+        `@fitCare:cart:${id}`,
+        `@fitCare:orders:${id}`,
       ])
     }
   }

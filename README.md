@@ -1,4 +1,4 @@
-# Fitaura App
+# Fit Care App
 
 Aplicativo mobile focado em auxiliar na organização de rotina fitness, permitindo o gerenciamento de **usuários**, **acompanhamento alimentar**, **registro de treinos** e uma **loja** com produtos relacionados ao estilo de vida saudável.z
 
@@ -39,7 +39,7 @@ Aplicativo mobile focado em auxiliar na organização de rotina fitness, permiti
 ## Estrutura do Projeto
 
 ```
-fitaura.app.ui/
+fit.care.app.ui/
 ├── server.mjs              # Servidor Socket.IO para rastreamento de pedidos em tempo real
 ├── src/
 │   ├── @types/
@@ -145,8 +145,8 @@ fitaura.app.ui/
 ### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/Gabriel-Leao/fitaura.app.ui.git
-cd fitaura.app.ui
+git clone https://github.com/Gabriel-Leao/fit.care.app.ui.git
+cd fit.care.app.ui
 ```
 
 ### 2. Instalar dependências
