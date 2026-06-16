@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.gabe_lion.fitcareapp"
     },
     "web": {
       "output": "static",
@@ -47,6 +48,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3fc0756b-c7e0-40d2-b747-8c706bc4bfce"
+      }
+    },
+    "owner": "gabe_lion"
   }
 }
